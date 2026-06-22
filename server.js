@@ -2,21 +2,25 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(cors());
-const fs = require('fs');
 
-// Serve the dashboard
+const mySecret = process.env['FINNHUB_API_KEY'];
+
+// Serve dashboard
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/portfolio-tracker.html');
+  const filePath = path.join(__dirname, 'portfolio-tracker.html');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      res.status(500).send('Error loading dashboard: ' + err.message);
+      return;
+    }
+    res.setHeader('Content-Type', 'text/html');
+    res.send(data);
+  });
 });
-
-app.get('/portfolio-tracker.html', (req, res) => {
-  res.sendFile(__dirname + '/portfolio-tracker.html');
-});
-
-const FINNHUB_API_KEY = 'd8sejr9r01qkn75ea650d8sejr9r01qkn75ea65g';
 
 // Health check
 app.get('/api/healthz', (req, res) => {
