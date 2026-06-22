@@ -57,10 +57,54 @@ const PERIOD_MAP: Record<string, { range: string; interval: string }> = {
   "5y": { range: "5y", interval: "1mo" },
 };
 
+type YahooChart = {
+  chart?: {
+    result?: Array<{
+      timestamp?: number[];
+      indicators?: {
+        quote?: Array<{
+          close?: (number | null)[];
+        }>;
+      };
+      meta?: { currency?: string };
+    }>;
+    error?: { description?: string };
+  };
+};
+
+async function fetchYahooHistory(
+  ticker: string,
+  range: string,
+  interval: string,
+): Promise<YahooChart> {
+  const path = `/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}&includeTimestamps=true`;
+  const mirrors = [
+    `https://query1.finance.yahoo.com${path}`,
+    `https://query2.finance.yahoo.com${path}`,
+  ];
+
+  let lastErr: Error = new Error("Yahoo Finance unavailable");
+  for (const url of mirrors) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          Accept: "application/json",
+        },
+      });
+      if (res.ok) return (await res.json()) as YahooChart;
+      lastErr = new Error(`Yahoo Finance ${res.status}: ${res.statusText}`);
+    } catch (e) {
+      lastErr = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw lastErr;
+}
+
 router.get(
   "/history/:ticker/:period",
   async (req: Request, res: Response) => {
-    const ticker = String(req.params["ticker"]).toUpperCase();
+    const ticker = String(req.params["ticker"]);
     const period = String(req.params["period"]).toLowerCase();
 
     const mapping = PERIOD_MAP[period];
@@ -78,35 +122,7 @@ router.get(
       return;
     }
 
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${mapping.range}&interval=${mapping.interval}&includeTimestamps=true`;
-    const yahooRes = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-    });
-
-    if (!yahooRes.ok) {
-      throw new Error(
-        `Yahoo Finance error ${yahooRes.status}: ${yahooRes.statusText}`,
-      );
-    }
-
-    const raw = (await yahooRes.json()) as {
-      chart?: {
-        result?: Array<{
-          timestamp?: number[];
-          indicators?: {
-            quote?: Array<{
-              open?: number[];
-              high?: number[];
-              low?: number[];
-              close?: number[];
-              volume?: number[];
-            }>;
-          };
-          meta?: { currency?: string; symbol?: string };
-        }>;
-        error?: { description?: string };
-      };
-    };
+    const raw = await fetchYahooHistory(ticker, mapping.range, mapping.interval);
 
     if (raw.chart?.error) {
       throw new Error(
@@ -116,27 +132,18 @@ router.get(
 
     const result = raw.chart?.result?.[0];
     if (!result) {
-      throw new Error("No data returned from Yahoo Finance");
+      throw new Error(`No history data found for ${ticker}`);
     }
 
     const timestamps = result.timestamp ?? [];
-    const quote = result.indicators?.quote?.[0] ?? {};
+    const closes = result.indicators?.quote?.[0]?.close ?? [];
 
-    const candles = timestamps.map((t, i) => ({
-      t,
-      o: quote.open?.[i] ?? null,
-      h: quote.high?.[i] ?? null,
-      l: quote.low?.[i] ?? null,
-      c: quote.close?.[i] ?? null,
-      v: quote.volume?.[i] ?? null,
-    }));
-
-    const data = {
-      ticker,
-      period,
-      currency: result.meta?.currency ?? "USD",
-      candles,
-    };
+    const data = timestamps
+      .map((t, i) => ({
+        date: new Date(t * 1000).toISOString().split("T")[0],
+        price: closes[i] ?? null,
+      }))
+      .filter((p): p is { date: string; price: number } => p.price !== null);
 
     setCached(cacheKey, data);
     res.json(data);
