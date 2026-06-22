@@ -113,6 +113,20 @@
         </label>
       </div>
 
+      <div class="form-group">
+        <label>Sort by</label>
+        <select id="sortBy" onchange="filterStocks()">
+          <option value="">Default order</option>
+          <option value="changePercent_desc">Price change % ↓ (best first)</option>
+          <option value="changePercent_asc">Price change % ↑ (worst first)</option>
+          <option value="pe_asc">P/E ratio ↑ (cheapest first)</option>
+          <option value="pe_desc">P/E ratio ↓ (most expensive first)</option>
+          <option value="price_desc">Price ↓ (highest first)</option>
+          <option value="price_asc">Price ↑ (lowest first)</option>
+          <option value="high52_proximity">Nearest 52-week high</option>
+        </select>
+      </div>
+
       <button class="btn-secondary" onclick="resetFilters()" style="width: 100%; margin-bottom: 12px;">Reset filters</button>
       <button class="btn-primary" onclick="refreshData()" style="width: 100%;">Refresh data</button>
 
@@ -366,11 +380,47 @@
       return price >= high52Week * 0.98;
     }
 
+    function sortStocks(stocks, sortBy) {
+      if (!sortBy) return stocks;
+      return [...stocks].sort((a, b) => {
+        const da = stockData[a.ticker];
+        const db = stockData[b.ticker];
+        switch (sortBy) {
+          case 'changePercent_desc':
+            return (db?.changePercent ?? -Infinity) - (da?.changePercent ?? -Infinity);
+          case 'changePercent_asc':
+            return (da?.changePercent ?? Infinity) - (db?.changePercent ?? Infinity);
+          case 'pe_asc': {
+            const pa = da?.pe ?? Infinity;
+            const pb = db?.pe ?? Infinity;
+            return pa - pb;
+          }
+          case 'pe_desc': {
+            const pa = da?.pe ?? -Infinity;
+            const pb = db?.pe ?? -Infinity;
+            return pb - pa;
+          }
+          case 'price_desc':
+            return (db?.price ?? 0) - (da?.price ?? 0);
+          case 'price_asc':
+            return (da?.price ?? Infinity) - (db?.price ?? Infinity);
+          case 'high52_proximity': {
+            const proxA = da?.high52Week ? (da.high52Week - da.price) / da.high52Week : Infinity;
+            const proxB = db?.high52Week ? (db.high52Week - db.price) / db.high52Week : Infinity;
+            return proxA - proxB;
+          }
+          default:
+            return 0;
+        }
+      });
+    }
+
     function filterStocks() {
       const search = document.getElementById('searchInput').value.toUpperCase();
       const category = document.getElementById('categoryFilter').value;
       const hasAlertsOnly = document.getElementById('hasAlertsFilter').checked;
       const has52WeekHighOnly = document.getElementById('has52WeekHighFilter').checked;
+      const sortBy = document.getElementById('sortBy').value;
 
       let filtered = allStocks.filter(stock => {
         const matchesSearch = !search || stock.ticker.includes(search);
@@ -386,7 +436,7 @@
         return matchesSearch && matchesCategory && matchesAlerts && matchesHighFilter;
       });
 
-      renderStocks(filtered);
+      renderStocks(sortStocks(filtered, sortBy));
     }
 
     function renderStocks(stocks) {
@@ -577,6 +627,7 @@
       document.getElementById('categoryFilter').value = '';
       document.getElementById('hasAlertsFilter').checked = false;
       document.getElementById('has52WeekHighFilter').checked = false;
+      document.getElementById('sortBy').value = '';
       filterStocks();
     }
 
