@@ -430,12 +430,12 @@
           <div class="metrics">
             <div class="metric-row">
               <span>P/E:</span>
-              <span>${data.peRatio ? data.peRatio.toFixed(2) : 'N/A'}</span>
+              <span>${data.pe ? data.pe.toFixed(2) : 'N/A'}</span>
             </div>
-            <<div class="metrics-row">
-  <span>P/E: ${stock.pe || 'N/A'}</span>
-  <span>Forward P/E: ${stock.forwardPE || 'N/A'}</span>
-</div>
+            <div class="metric-row">
+              <span>Fwd P/E:</span>
+              <span>${data.forwardPE ? data.forwardPE.toFixed(2) : 'N/A'}</span>
+            </div>
           </div>
           <button class="btn-set-alert" onclick="event.stopPropagation(); openAlertModal('${stock.ticker}')">Set alert</button>
         `;
@@ -452,7 +452,7 @@
       document.getElementById('detailCategory').textContent = getCategoryLabel(allStocks.find(s => s.ticker === ticker).category);
       document.getElementById('detailPrice').textContent = `$${data.price.toFixed(2)}`;
       document.getElementById('detailChange').textContent = `${data.change > 0 ? '+' : ''}${data.changePercent.toFixed(2)}%`;
-      document.getElementById('detailPE').textContent = data.peRatio ? data.peRatio.toFixed(2) : 'N/A';
+      document.getElementById('detailPE').textContent = data.pe ? data.pe.toFixed(2) : 'N/A';
       document.getElementById('detailForwardPE').textContent = data.forwardPE ? data.forwardPE.toFixed(2) : 'N/A';
       document.getElementById('detailHigh52').textContent = data.high52Week ? `$${data.high52Week.toFixed(2)}` : 'N/A';
       document.getElementById('detailLow52').textContent = data.low52Week ? `$${data.low52Week.toFixed(2)}` : 'N/A';
