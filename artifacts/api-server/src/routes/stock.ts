@@ -21,6 +21,86 @@ async function finnhubGet(path: string): Promise<unknown> {
   return res.json();
 }
 
+const MAX_BATCH = 50;
+
+function parseTickers(raw: unknown): string[] | null {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  const tickers = raw
+    .split(",")
+    .map((t) => t.trim().toUpperCase())
+    .filter(Boolean);
+  if (tickers.length === 0 || tickers.length > MAX_BATCH) return null;
+  return tickers;
+}
+
+router.get("/quote/batch", async (req: Request, res: Response) => {
+  const tickers = parseTickers(req.query["tickers"]);
+  if (!tickers) {
+    res.status(400).json({
+      error: `Provide ?tickers=AAPL,MSFT,... (max ${MAX_BATCH})`,
+    });
+    return;
+  }
+
+  const results = await Promise.all(
+    tickers.map(async (ticker) => {
+      const cacheKey = `quote:${ticker}`;
+      const cached = getCached(cacheKey);
+      if (cached) return { ticker, data: cached };
+
+      try {
+        const data = await finnhubQueue.run(() =>
+          finnhubGet(`/quote?symbol=${ticker}`),
+        );
+        setCached(cacheKey, data);
+        return { ticker, data };
+      } catch {
+        return { ticker, data: null };
+      }
+    }),
+  );
+
+  const out: Record<string, unknown> = {};
+  for (const r of results) {
+    out[r.ticker] = r.data;
+  }
+  res.json(out);
+});
+
+router.get("/metrics/batch", async (req: Request, res: Response) => {
+  const tickers = parseTickers(req.query["tickers"]);
+  if (!tickers) {
+    res.status(400).json({
+      error: `Provide ?tickers=AAPL,MSFT,... (max ${MAX_BATCH})`,
+    });
+    return;
+  }
+
+  const results = await Promise.all(
+    tickers.map(async (ticker) => {
+      const cacheKey = `metrics:${ticker}`;
+      const cached = getCached(cacheKey);
+      if (cached) return { ticker, data: cached };
+
+      try {
+        const data = await finnhubQueue.run(() =>
+          finnhubGet(`/stock/metric?symbol=${ticker}&metric=all`),
+        );
+        setCached(cacheKey, data);
+        return { ticker, data };
+      } catch {
+        return { ticker, data: null };
+      }
+    }),
+  );
+
+  const out: Record<string, unknown> = {};
+  for (const r of results) {
+    out[r.ticker] = r.data;
+  }
+  res.json(out);
+});
+
 router.get("/quote/:ticker", async (req: Request, res: Response) => {
   const ticker = String(req.params["ticker"]).toUpperCase();
   const cacheKey = `quote:${ticker}`;
@@ -30,7 +110,9 @@ router.get("/quote/:ticker", async (req: Request, res: Response) => {
     return;
   }
 
-  const data = await finnhubQueue.run(() => finnhubGet(`/quote?symbol=${ticker}`));
+  const data = await finnhubQueue.run(() =>
+    finnhubGet(`/quote?symbol=${ticker}`),
+  );
   setCached(cacheKey, data);
   res.json(data);
 });
@@ -90,10 +172,7 @@ async function fetchYahooHistory(
   for (const url of mirrors) {
     try {
       const res = await fetch(url, {
-        headers: {
-          "User-Agent": "Mozilla/5.0",
-          Accept: "application/json",
-        },
+        headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
       });
       if (res.ok) return (await res.json()) as YahooChart;
       lastErr = new Error(`Yahoo Finance ${res.status}: ${res.statusText}`);
