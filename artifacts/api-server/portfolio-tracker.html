@@ -39,7 +39,8 @@
     .change { font-size: 14px; font-weight: 500; }
     .change.up { color: #4caf50; }
     .change.down { color: #f44336; }
-    .company-name { font-size: 12px; color: #555; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ticker-row { display: flex; align-items: baseline; gap: 6px; }
+    .company-name { font-size: 12px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .high52 { font-size: 12px; color: #999; margin-top: 4px; }
     
     .metrics { font-size: 11px; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
@@ -487,8 +488,10 @@
         const changeClass = data.change > 0 ? 'up' : data.change < 0 ? 'down' : '';
         
         card.innerHTML = `
-          <div class="ticker">${stock.ticker}</div>
-          ${data.name ? `<div class="company-name">${data.name}</div>` : ''}
+          <div class="ticker-row">
+            <div class="ticker">${stock.ticker}</div>
+            ${data.name ? `<div class="company-name">${data.name}</div>` : ''}
+          </div>
           <div class="category">${getCategoryLabel(stock.category)}</div>
           ${badgesHTML}
           <div class="price">$${data.price.toFixed(2)}</div>
