@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Portfolio Tracker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9f8f6; color: #333; }
+    
+    .container { display: flex; height: 100vh; gap: 16px; padding: 1rem; }
+    .sidebar { width: 240px; border-right: 1px solid #e0e0e0; padding-right: 16px; overflow-y: auto; }
+    .main { flex: 1; overflow-y: auto; }
+    
+    h1 { font-size: 22px; font-weight: 500; margin-bottom: 1.5rem; }
+    h2 { font-size: 16px; font-weight: 500; margin-bottom: 1rem; }
+    
+    .form-group { margin-bottom: 1.5rem; }
+    label { display: block; font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 500; }
+    input, select { width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+    
+    button { padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; border: none; }
+    .btn-secondary { background: #f0f0f0; border: 1px solid #e0e0e0; color: #333; }
+    .btn-primary { background: #378ADD; border: none; color: white; }
+    
+    .btn-secondary:hover { background: #e8e8e8; }
+    .btn-primary:hover { background: #2870c4; }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    
+    .card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s; }
+    .card:hover { border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card.highlight { border-color: #4caf50; }
+    
+    .ticker { font-size: 16px; font-weight: 500; margin-bottom: 2px; }
+    .category { font-size: 12px; color: #999; }
+    .price { font-size: 18px; font-weight: 500; margin: 12px 0 4px; }
+    .change { font-size: 14px; font-weight: 500; }
+    .change.up { color: #4caf50; }
+    .change.down { color: #f44336; }
+    .high52 { font-size: 12px; color: #999; margin-top: 4px; }
+    
+    .metrics { font-size: 11px; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+    .metric-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    
+    .badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 6px; font-weight: 500; }
+    .badge-high { background: #e8f5e9; color: #2e7d32; }
+    .badge-alert { background: #e3f2fd; color: #1565c0; }
+    
+    .btn-set-alert { width: 100%; padding: 8px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 6px; margin-top: 12px; cursor: pointer; }
+    .btn-set-alert:hover { background: #ebebeb; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; overflow-y: auto; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 8px; padding: 2rem; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; margin: auto; }
+    
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-header h2 { margin: 0; }
+    .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .close-btn:hover { color: #333; }
+    
+    .chart-container { position: relative; height: 300px; margin: 1.5rem 0; }
+    
+    .chart-tabs { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+    .chart-tab { padding: 10px 16px; border: 1px solid #e0e0e0; border-radius: 6px; background: white; cursor: pointer; font-weight: 500; }
+    .chart-tab.active { background: #378ADD; color: white; border-color: #378ADD; }
+    
+    .status { padding: 12px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666; margin-top: 16px; }
+    
+    .loading { text-align: center; padding: 2rem; color: #999; }
+    
+    .stock-count { font-size: 14px; color: #999; }
+
+    .server-status { padding: 12px; margin-bottom: 12px; border-radius: 6px; font-size: 13px; text-align: center; }
+    .server-status.connected { background: #e8f5e9; color: #2e7d32; }
+    .server-status.disconnected { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div id="serverStatus" class="server-status disconnected">🔴 Connecting to server...</div>
+      
+      <h2>Filters</h2>
+      
+      <div class="form-group">
+        <label>Search ticker</label>
+        <input type="text" id="searchInput" placeholder="e.g., MSFT">
+      </div>
+
+      <div class="form-group">
+        <label>Category</label>
+        <select id="categoryFilter">
+          <option value="">All categories</option>
+          <option value="us">US Stocks</option>
+          <option value="ca">Canadian (.TO)</option>
+          <option value="etf">ETFs</option>
+          <option value="crypto">Crypto</option>
+          <option value="index">Indices</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Alerts & milestones</label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-weight: 400;">
+          <input type="checkbox" id="hasAlertsFilter">
+          <span>Has custom alerts</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 400;">
+          <input type="checkbox" id="has52WeekHighFilter">
+          <span>At 52-week high</span>
+        </label>
+      </div>
+
+      <button class="btn-secondary" onclick="resetFilters()" style="width: 100%; margin-bottom: 12px;">Reset filters</button>
+      <button class="btn-primary" onclick="refreshData()" style="width: 100%;">Refresh data</button>
+
+      <div class="status">
+        <p style="margin-bottom: 6px;">Last updated:</p>
+        <p id="lastUpdated" style="font-weight: 500;">Loading...</p>
+      </div>
+    </div>
+
+    <div class="main">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h1>Your portfolio</h1>
+        <span class="stock-count" id="stockCount">Loading...</span>
+      </div>
+
+      <div id="stocksContainer" class="grid">
+        <div class="loading" style="grid-column: 1 / -1;">Loading stock data...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Detail Modal -->
+  <div id="detailModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h2 id="detailTicker" style="margin-bottom: 0.5rem;"></h2>
+          <p id="detailCategory" style="color: #999; margin: 0; font-size: 14px;"></p>
+        </div>
+        <button class="close-btn" onclick="closeDetailModal()">✕</button>
+      </div>
+
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="switchChart('1y')">1 Year</button>
+        <button class="chart-tab" onclick="switchChart('5y')">5 Years</button>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="priceChart"></canvas>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 1.5rem 0;">
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">Current Price</p>
+          <p id="detailPrice" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">Change (Today)</p>
+          <p id="detailChange" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">P/E Ratio</p>
+          <p id="detailPE" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">Forward P/E</p>
+          <p id="detailForwardPE" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">52-Week High</p>
+          <p id="detailHigh52" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">52-Week Low</p>
+          <p id="detailLow52" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="openAlertModal(currentDetailTicker)" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 1.5rem;">Set Price Alert</button>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div id="alertModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <h2 style="margin-bottom: 1rem;">Set alert for <span id="alertTickerName"></span></h2>
+      
+      <div class="form-group">
+        <label>Price target (above)</label>
+        <input type="number" id="priceAbove" placeholder="e.g., 150" step="0.01">
+      </div>
+
+      <div class="form-group">
+        <label>Price target (below)</label>
+        <input type="number" id="priceBelow" placeholder="e.g., 120" step="0.01">
+      </div>
+
+      <div class="form-group">
+        <label>Percent change alert (%)</label>
+        <input type="number" id="percentChange" placeholder="e.g., 5" step="0.01">
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-secondary" onclick="closeAlertModal()" style="flex: 1;">Cancel</button>
+        <button class="btn-primary" onclick="saveAlert()" style="flex: 1;">Save alert</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // IMPORTANT: Change this URL based on where you're running the server
+    // Local: http://localhost:3000
+    // Replit: https://your-replit-name.your-username.repl.co
+    const SERVER_URL = 'https://8194709f-346a-4715-935a-16188dc4f2d8-00-2nxbj8mdlbl44.riker.replit.dev'; 
+
+    const allStocks = [
+      { ticker: 'SFTBY', category: 'etf' }, { ticker: 'BAL', category: 'etf' }, { ticker: 'PWR', category: 'us' },
+      { ticker: 'RMD', category: 'us' }, { ticker: 'OXO', category: 'us' }, { ticker: 'NBIS', category: 'us' },
+      { ticker: 'ARCC', category: 'us' }, { ticker: 'UBER', category: 'us' }, { ticker: 'MNDY', category: 'us' },
+      { ticker: 'CRS', category: 'us' }, { ticker: 'MSFT', category: 'us' }, { ticker: 'ASEA', category: 'us' },
+      { ticker: 'FFH.TO', category: 'ca' }, { ticker: 'ETN', category: 'us' }, { ticker: 'IREN', category: 'us' },
+      { ticker: 'GEV', category: 'us' }, { ticker: 'AER', category: 'ca' }, { ticker: 'AMD', category: 'us' },
+      { ticker: 'NVO', category: 'us' }, { ticker: 'GOOG', category: 'us' }, { ticker: 'PLTR', category: 'us' },
+      { ticker: 'MED', category: 'us' }, { ticker: 'PRL.TO', category: 'ca' }, { ticker: 'OZEM', category: 'us' },
+      { ticker: 'AAPL', category: 'us' }, { ticker: 'KSPI', category: 'us' }, { ticker: 'VST', category: 'etf' },
+      { ticker: 'GLD', category: 'etf' }, { ticker: 'IBIT', category: 'etf' }, { ticker: 'HOOD', category: 'us' },
+      { ticker: 'IEVA', category: 'etf' }, { ticker: 'INMD', category: 'us' }, { ticker: 'NVDA', category: 'us' },
+      { ticker: 'H3P', category: 'etf' }, { ticker: 'BTDBY', category: 'etf' }, { ticker: 'EWJ', category: 'etf' },
+      { ticker: 'RMDA', category: 'us' }, { ticker: 'EMDA', category: 'etf' }, { ticker: 'WIOB', category: 'us' },
+      { ticker: 'OXLC', category: 'etf' }, { ticker: 'LGIH', category: 'us' }, { ticker: 'SJ.TO', category: 'ca' },
+      { ticker: 'WVO', category: 'us' }, { ticker: 'VNQ', category: 'etf' }, { ticker: 'PCY', category: 'etf' },
+      { ticker: 'LNR.TO', category: 'ca' }, { ticker: 'SYF', category: 'us' }, { ticker: 'NBN', category: 'ca' },
+      { ticker: 'VTWV', category: 'etf' }, { ticker: 'META', category: 'us' }, { ticker: 'BTC-USD', category: 'crypto' },
+      { ticker: '^IXIC', category: 'index' }, { ticker: '^GSPC', category: 'index' }
+    ];
+
+    let stockData = {};
+    let alerts = JSON.parse(localStorage.getItem('stockAlerts') || '{}');
+    let currentAlertTicker = null;
+    let currentDetailTicker = null;
+    let currentChart = null;
+    let currentChartType = '1y';
+    let serverConnected = false;
+
+    function getCategoryLabel(cat) {
+      const labels = { us: 'US Stocks', ca: 'Canadian', etf: 'ETFs', crypto: 'Crypto', index: 'Indices' };
+      return labels[cat] || cat;
+    }
+
+    async function checkServer() {
+      try {
+        const response = await fetch(`${SERVER_URL}/api/healthz`);
+        if (response.ok) {
+          serverConnected = true;
+          document.getElementById('serverStatus').textContent = '🟢 Connected';
+          document.getElementById('serverStatus').className = 'server-status connected';
+          return true;
+        }
+      } catch (error) {
+        console.error('Server connection failed:', error);
+      }
+      
+      serverConnected = false;
+      document.getElementById('serverStatus').textContent = '🔴 Server offline';
+      document.getElementById('serverStatus').className = 'server-status disconnected';
+      return false;
+    }
+
+    async function fetchStockData(ticker) {
+     try {
+       const response = await fetch(`${SERVER_URL}/api/quote/${ticker}`);
+       const data = await response.json();
+       
+       if (data.c !== undefined) {
+         return {
+           ticker: ticker,
+           price: Math.round(data.c * 100) / 100,
+           change: Math.round(data.d * 100) / 100,
+           changePercent: Math.round(data.dp * 100) / 100,
+           high52Week: data.h ? Math.round(data.h * 100) / 100 : null,
+           low52Week: data.l ? Math.round(data.l * 100) / 100 : null,
+           error: false
+         };
+       }
+       return { ticker: ticker, error: true };
+     } catch (error) {
+       console.error('Error fetching quote for', ticker, error);
+       return { ticker: ticker, error: true };
+     }
+   }
+
+    async function fetchMetrics(ticker) {
+  try {
+    const response = await fetch(`${SERVER_URL}/api/metrics/${ticker}`);
+    const data = await response.json();
+    
+    if (data.metric) {
+      return {
+        ticker: ticker,
+        pe: data.metric.peTTM ? Math.round(data.metric.peTTM * 100) / 100 : null,
+        forwardPE: data.metric.forwardPE ? Math.round(data.metric.forwardPE * 100) / 100 : null,
+        high52Week: data.metric['52WeekHigh'] ? Math.round(data.metric['52WeekHigh'] * 100) / 100 : null,
+        low52Week: data.metric['52WeekLow'] ? Math.round(data.metric['52WeekLow'] * 100) / 100 : null,
+        error: false
+      };
+    }
+    return { ticker: ticker, error: true };
+  } catch (error) {
+    console.error('Error fetching metrics for', ticker, error);
+    return { ticker: ticker, error: true };
+  }
+}
+
+    async function fetchHistoricalData(ticker, period) {
+      try {
+        const response = await fetch(`${SERVER_URL}/api/history/${ticker}/${period}`);
+        const prices = await response.json();
+        return prices.map(p => ({
+          date: new Date(p.date),
+          price: p.price
+        }));
+      } catch (error) {
+        console.error('Error fetching history for', ticker, error);
+        return [];
+      }
+    }
+
+    async function loadAllStockData() {
+      const isConnected = await checkServer();
+      if (!isConnected) {
+        const container = document.getElementById('stocksContainer');
+        container.innerHTML = '<div class="loading" style="grid-column: 1 / -1;">⚠️ Cannot connect to server. Make sure the Node.js backend is running.</div>';
+        return;
+      }
+
+      const container = document.getElementById('stocksContainer');
+      container.innerHTML = '<div class="loading" style="grid-column: 1 / -1;">Loading stock data...</div>';
+      
+      const requests = allStocks.map(stock => fetchStockData(stock.ticker));
+      const results = await Promise.all(requests);
+      
+      results.forEach(data => {
+        if (!data.error) {
+          stockData[data.ticker] = data;
+        }
+      });
+
+      const metricsRequests = Object.keys(stockData).map(ticker => 
+        fetchMetrics(ticker).then(metrics => {
+          stockData[ticker] = { ...stockData[ticker], ...metrics };
+        })
+      );
+      await Promise.all(metricsRequests);
+      
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+      filterStocks();
+    }
+
+    function checkIs52WeekHigh(price, high52Week) {
+      if (!high52Week) return false;
+      return price >= high52Week * 0.98;
+    }
+
+    function filterStocks() {
+      const search = document.getElementById('searchInput').value.toUpperCase();
+      const category = document.getElementById('categoryFilter').value;
+      const hasAlertsOnly = document.getElementById('hasAlertsFilter').checked;
+      const has52WeekHighOnly = document.getElementById('has52WeekHighFilter').checked;
+
+      let filtered = allStocks.filter(stock => {
+        const matchesSearch = !search || stock.ticker.includes(search);
+        const matchesCategory = !category || stock.category === category;
+        const matchesAlerts = !hasAlertsOnly || alerts[stock.ticker];
+        
+        let matchesHighFilter = true;
+        const data = stockData[stock.ticker];
+        if (has52WeekHighOnly && data) {
+          matchesHighFilter = checkIs52WeekHigh(data.price, data.high52Week);
+        }
+        
+        return matchesSearch && matchesCategory && matchesAlerts && matchesHighFilter;
+      });
+
+      renderStocks(filtered);
+    }
+
+    function renderStocks(stocks) {
+      const container = document.getElementById('stocksContainer');
+      container.innerHTML = '';
+      document.getElementById('stockCount').textContent = stocks.length + ' stock' + (stocks.length !== 1 ? 's' : '');
+
+      stocks.forEach(stock => {
+        const data = stockData[stock.ticker];
+        
+        if (!data) {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `<div class="ticker">${stock.ticker}</div><div class="loading" style="margin-top: 8px;">Loading...</div>`;
+          container.appendChild(card);
+          return;
+        }
+
+        const isAt52WeekHigh = checkIs52WeekHigh(data.price, data.high52Week);
+        const hasAlert = !!alerts[stock.ticker];
+
+        const card = document.createElement('div');
+        card.className = 'card' + (isAt52WeekHigh ? ' highlight' : '');
+        card.onclick = () => openDetailModal(stock.ticker);
+
+        let badgesHTML = '';
+        if (isAt52WeekHigh) badgesHTML += '<span class="badge badge-high">52w high</span>';
+        if (hasAlert) badgesHTML += '<span class="badge badge-alert">alert</span>';
+
+        const changeClass = data.change > 0 ? 'up' : data.change < 0 ? 'down' : '';
+        
+        card.innerHTML = `
+          <div class="ticker">${stock.ticker}</div>
+          <div class="category">${getCategoryLabel(stock.category)}</div>
+          ${badgesHTML}
+          <div class="price">$${data.price.toFixed(2)}</div>
+          <div class="change ${changeClass}">
+            ${data.change > 0 ? '+' : ''}${data.changePercent.toFixed(2)}% (${data.change > 0 ? '+' : ''}$${data.change.toFixed(2)})
+          </div>
+          ${data.high52Week ? `<div class="high52">52w high: $${data.high52Week.toFixed(2)}</div>` : ''}
+          <div class="metrics">
+            <div class="metric-row">
+              <span>P/E:</span>
+              <span>${data.peRatio ? data.peRatio.toFixed(2) : 'N/A'}</span>
+            </div>
+            <<div class="metrics-row">
+  <span>P/E: ${stock.pe || 'N/A'}</span>
+  <span>Forward P/E: ${stock.forwardPE || 'N/A'}</span>
+</div>
+          </div>
+          <button class="btn-set-alert" onclick="event.stopPropagation(); openAlertModal('${stock.ticker}')">Set alert</button>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    async function openDetailModal(ticker) {
+      currentDetailTicker = ticker;
+      const data = stockData[ticker];
+      
+      document.getElementById('detailTicker').textContent = ticker;
+      document.getElementById('detailCategory').textContent = getCategoryLabel(allStocks.find(s => s.ticker === ticker).category);
+      document.getElementById('detailPrice').textContent = `$${data.price.toFixed(2)}`;
+      document.getElementById('detailChange').textContent = `${data.change > 0 ? '+' : ''}${data.changePercent.toFixed(2)}%`;
+      document.getElementById('detailPE').textContent = data.peRatio ? data.peRatio.toFixed(2) : 'N/A';
+      document.getElementById('detailForwardPE').textContent = data.forwardPE ? data.forwardPE.toFixed(2) : 'N/A';
+      document.getElementById('detailHigh52').textContent = data.high52Week ? `$${data.high52Week.toFixed(2)}` : 'N/A';
+      document.getElementById('detailLow52').textContent = data.low52Week ? `$${data.low52Week.toFixed(2)}` : 'N/A';
+      
+      document.getElementById('detailModal').classList.add('active');
+      currentChartType = '1y';
+      
+      setTimeout(async () => {
+        await loadChart(ticker, '1y');
+      }, 100);
+    }
+
+    async function loadChart(ticker, period) {
+      try {
+        const prices = await fetchHistoricalData(ticker, period);
+        
+        if (prices.length === 0) {
+          const canvas = document.getElementById('priceChart');
+          canvas.parentElement.innerHTML = '<p style="color: #999; padding: 2rem; text-align: center;">No chart data available</p>';
+          return;
+        }
+        
+        const labels = prices.map(p => p.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        const values = prices.map(p => p.price);
+
+        const canvasElement = document.getElementById('priceChart');
+        if (!canvasElement) return;
+
+        if (currentChart) {
+          currentChart.destroy();
+        }
+
+        const ctx = canvasElement.getContext('2d');
+        
+        currentChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: ticker + ' Price',
+              data: values,
+              borderColor: '#378ADD',
+              backgroundColor: 'rgba(55, 138, 221, 0.1)',
+              tension: 0.1,
+              fill: true,
+              pointRadius: 0,
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true }
+            },
+            scales: {
+              y: { beginAtZero: false }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error loading chart:', error);
+      }
+    }
+
+    function switchChart(period) {
+      currentChartType = period;
+      
+      document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      loadChart(currentDetailTicker, period);
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('active');
+      if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+      }
+    }
+
+    function openAlertModal(ticker) {
+      currentAlertTicker = ticker;
+      document.getElementById('alertTickerName').textContent = ticker;
+      const alert = alerts[ticker] || {};
+      document.getElementById('priceAbove').value = alert.priceAbove || '';
+      document.getElementById('priceBelow').value = alert.priceBelow || '';
+      document.getElementById('percentChange').value = alert.percentChange || '';
+      document.getElementById('alertModal').classList.add('active');
+    }
+
+    function closeAlertModal() {
+      document.getElementById('alertModal').classList.remove('active');
+      currentAlertTicker = null;
+    }
+
+    function saveAlert() {
+      if (!currentAlertTicker) return;
+      
+      const priceAbove = document.getElementById('priceAbove').value;
+      const priceBelow = document.getElementById('priceBelow').value;
+      const percentChange = document.getElementById('percentChange').value;
+
+      if (priceAbove || priceBelow || percentChange) {
+        alerts[currentAlertTicker] = {
+          priceAbove: priceAbove ? parseFloat(priceAbove) : null,
+          priceBelow: priceBelow ? parseFloat(priceBelow) : null,
+          percentChange: percentChange ? parseFloat(percentChange) : null
+        };
+      } else {
+        delete alerts[currentAlertTicker];
+      }
+
+      localStorage.setItem('stockAlerts', JSON.stringify(alerts));
+      closeAlertModal();
+      filterStocks();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('hasAlertsFilter').checked = false;
+      document.getElementById('has52WeekHighFilter').checked = false;
+      filterStocks();
+    }
+
+    function refreshData() {
+      loadAllStockData();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterStocks);
+    document.getElementById('categoryFilter').addEventListener('change', filterStocks);
+    document.getElementById('hasAlertsFilter').addEventListener('change', filterStocks);
+    document.getElementById('has52WeekHighFilter').addEventListener('change', filterStocks);
+
+    loadAllStockData();
+    setInterval(loadAllStockData, 300000);
+  </script>
+</body>
+</html>
