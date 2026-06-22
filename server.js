@@ -3,8 +3,17 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 
 const app = express();
-app.use(express.static('.')); // Serve static files
 app.use(cors());
+const fs = require('fs');
+
+// Serve the dashboard
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/portfolio-tracker.html');
+});
+
+app.get('/portfolio-tracker.html', (req, res) => {
+  res.sendFile(__dirname + '/portfolio-tracker.html');
+});
 
 const FINNHUB_API_KEY = 'd8sejr9r01qkn75ea650d8sejr9r01qkn75ea65g';
 
