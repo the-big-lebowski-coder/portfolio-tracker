@@ -29,7 +29,9 @@
     
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
     
-    .card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s; }
+    .card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s; position: relative; }
+    .remove-btn { position: absolute; top: 6px; right: 6px; background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; z-index: 1; }
+    .remove-btn:hover { color: #f44336; background: #fff0f0; }
     .card:hover { border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .card.highlight { border-color: #4caf50; }
     
@@ -134,6 +136,25 @@
       <button class="btn-secondary" onclick="resetFilters()" style="width: 100%; margin-bottom: 12px;">Reset filters</button>
       <button class="btn-primary" onclick="refreshData()" style="width: 100%;">Refresh data</button>
 
+      <hr style="margin: 16px 0; border: none; border-top: 1px solid #eee;">
+      <h2>Manage Tickers</h2>
+      <div class="form-group">
+        <label>Ticker symbol</label>
+        <input type="text" id="addTickerInput" placeholder="e.g., TSLA" style="text-transform: uppercase;" onkeydown="if(event.key==='Enter') addTicker()">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="addTickerCategory">
+          <option value="us">US Stocks</option>
+          <option value="ca">Canadian (.TO)</option>
+          <option value="etf">ETF</option>
+          <option value="crypto">Crypto</option>
+          <option value="index">Index</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="addTicker()" style="width: 100%;">+ Add ticker</button>
+      <div id="addTickerMsg" style="font-size: 12px; margin-top: 6px; display: none;"></div>
+
       <div class="status">
         <p style="margin-bottom: 6px;">Last updated:</p>
         <p id="lastUpdated" style="font-weight: 500;">Loading...</p>
@@ -236,7 +257,7 @@
     // Replit: https://your-replit-name.your-username.repl.co
     const SERVER_URL = 'https://8194709f-346a-4715-935a-16188dc4f2d8-00-2nxbj8mdlbl44.riker.replit.dev'; 
 
-    const allStocks = [
+    const DEFAULT_STOCKS = [
       { ticker: 'SFTBY', category: 'etf' }, { ticker: 'BAL', category: 'etf' }, { ticker: 'PWR', category: 'us' },
       { ticker: 'RMD', category: 'us' }, { ticker: 'OXO', category: 'us' }, { ticker: 'NBIS', category: 'us' },
       { ticker: 'ARCC', category: 'us' }, { ticker: 'UBER', category: 'us' }, { ticker: 'MNDY', category: 'us' },
@@ -256,6 +277,54 @@
       { ticker: 'VTWV', category: 'etf' }, { ticker: 'META', category: 'us' }, { ticker: 'BTC-USD', category: 'crypto' },
       { ticker: '^IXIC', category: 'index' }, { ticker: '^GSPC', category: 'index' }
     ];
+
+    let allStocks = JSON.parse(localStorage.getItem('portfolioStocks') || 'null') || DEFAULT_STOCKS;
+
+    function saveStocks() {
+      localStorage.setItem('portfolioStocks', JSON.stringify(allStocks));
+    }
+
+    function removeTicker(ticker) {
+      allStocks = allStocks.filter(s => s.ticker !== ticker);
+      delete stockData[ticker];
+      saveStocks();
+      filterStocks();
+    }
+
+    async function addTicker() {
+      const input = document.getElementById('addTickerInput');
+      const category = document.getElementById('addTickerCategory').value;
+      const msgEl = document.getElementById('addTickerMsg');
+      const ticker = input.value.trim().toUpperCase();
+      msgEl.style.display = 'none';
+      if (!ticker) {
+        msgEl.style.color = '#f44336';
+        msgEl.textContent = 'Please enter a ticker symbol.';
+        msgEl.style.display = 'block';
+        return;
+      }
+      if (allStocks.some(s => s.ticker === ticker)) {
+        msgEl.style.color = '#f44336';
+        msgEl.textContent = ticker + ' is already in your list.';
+        msgEl.style.display = 'block';
+        return;
+      }
+      allStocks.push({ ticker, category });
+      saveStocks();
+      input.value = '';
+      msgEl.style.color = '#4caf50';
+      msgEl.textContent = ticker + ' added!';
+      msgEl.style.display = 'block';
+      setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+      filterStocks();
+      const data = await fetchStockData(ticker);
+      if (!data.error) {
+        stockData[ticker] = data;
+        const metrics = await fetchMetrics(ticker);
+        stockData[ticker] = { ...stockData[ticker], ...metrics };
+      }
+      filterStocks();
+    }
 
     let stockData = {};
     let alerts = JSON.parse(localStorage.getItem('stockAlerts') || '{}');
@@ -469,7 +538,7 @@
         if (!data) {
           const card = document.createElement('div');
           card.className = 'card';
-          card.innerHTML = `<div class="ticker">${stock.ticker}</div><div class="loading" style="margin-top: 8px;">Loading...</div>`;
+          card.innerHTML = `<button class="remove-btn" onclick="event.stopPropagation();removeTicker('${stock.ticker}')" title="Remove">×</button><div class="ticker">${stock.ticker}</div><div class="loading" style="margin-top: 8px;">Loading...</div>`;
           container.appendChild(card);
           return;
         }
@@ -488,6 +557,7 @@
         const changeClass = data.change > 0 ? 'up' : data.change < 0 ? 'down' : '';
         
         card.innerHTML = `
+          <button class="remove-btn" onclick="event.stopPropagation();removeTicker('${stock.ticker}')" title="Remove">×</button>
           <div class="ticker-row">
             <div class="ticker">${stock.ticker}</div>
             ${data.name ? `<div class="company-name">${data.name}</div>` : ''}
