@@ -33,8 +33,8 @@ function parseTickers(raw: unknown): string[] | null {
   return tickers;
 }
 
-function isCanadian(ticker: string): boolean {
-  return ticker.endsWith(".TO") || ticker.endsWith(".TSX");
+function useYahoo(ticker: string): boolean {
+  return ticker.endsWith(".TO") || ticker.endsWith(".TSX") || ticker.startsWith("^");
 }
 
 function toYahooSymbol(ticker: string): string {
@@ -183,7 +183,7 @@ router.get("/profile/batch", async (req: Request, res: Response) => {
 
       try {
         let name: string | null = null;
-        if (isCanadian(ticker)) {
+        if (useYahoo(ticker)) {
           name = await yahooProfile(ticker);
         } else {
           const data = (await finnhubQueue.run(() =>
@@ -220,7 +220,7 @@ router.get("/quote/batch", async (req: Request, res: Response) => {
       if (cached) return { ticker, data: cached };
 
       try {
-        const data = isCanadian(ticker)
+        const data = useYahoo(ticker)
           ? await yahooQuote(ticker)
           : await finnhubQueue.run(() => finnhubGet(`/quote?symbol=${ticker}`));
         setCached(cacheKey, data);
@@ -252,7 +252,7 @@ router.get("/metrics/batch", async (req: Request, res: Response) => {
       if (cached) return { ticker, data: cached };
 
       try {
-        const data = isCanadian(ticker)
+        const data = useYahoo(ticker)
           ? await yahooMetrics(ticker)
           : await finnhubQueue.run(() =>
               finnhubGet(`/stock/metric?symbol=${ticker}&metric=all`),
@@ -276,7 +276,7 @@ router.get("/quote/:ticker", async (req: Request, res: Response) => {
   const cached = getCached(cacheKey);
   if (cached) { res.json(cached); return; }
 
-  const data = isCanadian(ticker)
+  const data = useYahoo(ticker)
     ? await yahooQuote(ticker)
     : await finnhubQueue.run(() => finnhubGet(`/quote?symbol=${ticker}`));
   setCached(cacheKey, data);
@@ -289,7 +289,7 @@ router.get("/metrics/:ticker", async (req: Request, res: Response) => {
   const cached = getCached(cacheKey);
   if (cached) { res.json(cached); return; }
 
-  const data = isCanadian(ticker)
+  const data = useYahoo(ticker)
     ? await yahooMetrics(ticker)
     : await finnhubQueue.run(() =>
         finnhubGet(`/stock/metric?symbol=${ticker}&metric=all`),
