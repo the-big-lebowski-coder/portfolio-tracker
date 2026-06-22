@@ -21,7 +21,7 @@ async function finnhubGet(path: string): Promise<unknown> {
   return res.json();
 }
 
-const MAX_BATCH = 50;
+const MAX_BATCH = 200;
 
 function parseTickers(raw: unknown): string[] | null {
   if (typeof raw !== "string" || !raw.trim()) return null;
