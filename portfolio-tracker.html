@@ -79,11 +79,35 @@
     .server-status { padding: 12px; margin-bottom: 12px; border-radius: 6px; font-size: 13px; text-align: center; }
     .server-status.connected { background: #e8f5e9; color: #2e7d32; }
     .server-status.disconnected { background: #ffebee; color: #c62828; }
+
+    .mobile-bar { display: none; align-items: center; justify-content: space-between; padding: 12px 16px; background: white; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 200; }
+    .mobile-bar h1 { margin: 0; font-size: 17px; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 498; }
+    .sidebar-close { display: none; position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 22px; cursor: pointer; color: #666; }
+
+    @media (max-width: 768px) {
+      .container { flex-direction: column; height: auto; padding: 0; gap: 0; }
+      .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: min(300px, 85vw); background: white; z-index: 499; transform: translateX(-100%); transition: transform 0.25s ease; border-right: 1px solid #e0e0e0; overflow-y: auto; padding: 1rem 1rem 2rem; }
+      .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.15); }
+      .sidebar-overlay.open { display: block; }
+      .sidebar-close { display: block; }
+      .mobile-bar { display: flex; }
+      .main { padding: 0.75rem; overflow-y: visible; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+      h1.desktop-title { display: none; }
+    }
   </style>
 </head>
 <body>
+  <div class="mobile-bar">
+    <h1>📈 Portfolio</h1>
+    <button class="btn-secondary" onclick="toggleSidebar()" style="display:flex;align-items:center;gap:6px;">☰ Filters</button>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
   <div class="container">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar" style="position:relative;">
+      <button class="sidebar-close" onclick="toggleSidebar()" title="Close">×</button>
       <div id="serverStatus" class="server-status disconnected">🔴 Connecting to server...</div>
       
       <h2>Filters</h2>
@@ -731,6 +755,11 @@
     document.getElementById('categoryFilter').addEventListener('change', filterStocks);
     document.getElementById('hasAlertsFilter').addEventListener('change', filterStocks);
     document.getElementById('has52WeekHighFilter').addEventListener('change', filterStocks);
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('open');
+    }
 
     loadAllStockData();
     setInterval(loadAllStockData, 300000);
