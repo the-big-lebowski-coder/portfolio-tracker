@@ -33,6 +33,39 @@ function parseTickers(raw: unknown): string[] | null {
   return tickers;
 }
 
+router.get("/profile/batch", async (req: Request, res: Response) => {
+  const tickers = parseTickers(req.query["tickers"]);
+  if (!tickers) {
+    res.status(400).json({
+      error: `Provide ?tickers=AAPL,MSFT,... (max ${MAX_BATCH})`,
+    });
+    return;
+  }
+
+  const results = await Promise.all(
+    tickers.map(async (ticker) => {
+      const cacheKey = `profile:${ticker}`;
+      const cached = getCached<{ name: string }>(cacheKey);
+      if (cached) return { ticker, name: cached.name ?? null };
+
+      try {
+        const data = (await finnhubQueue.run(() =>
+          finnhubGet(`/stock/profile2?symbol=${ticker}`),
+        )) as { name?: string };
+        const name = data.name ?? null;
+        setCached(cacheKey, { name });
+        return { ticker, name };
+      } catch {
+        return { ticker, name: null };
+      }
+    }),
+  );
+
+  const out: Record<string, string | null> = {};
+  for (const r of results) out[r.ticker] = r.name;
+  res.json(out);
+});
+
 router.get("/quote/batch", async (req: Request, res: Response) => {
   const tickers = parseTickers(req.query["tickers"]);
   if (!tickers) {

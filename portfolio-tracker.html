@@ -39,6 +39,7 @@
     .change { font-size: 14px; font-weight: 500; }
     .change.up { color: #4caf50; }
     .change.down { color: #f44336; }
+    .company-name { font-size: 12px; color: #555; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .high52 { font-size: 12px; color: #999; margin-top: 4px; }
     
     .metrics { font-size: 11px; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
@@ -124,6 +125,8 @@
           <option value="price_desc">Price ↓ (highest first)</option>
           <option value="price_asc">Price ↑ (lowest first)</option>
           <option value="high52_proximity">Nearest 52-week high</option>
+          <option value="ticker_asc">Ticker A → Z</option>
+          <option value="ticker_desc">Ticker Z → A</option>
         </select>
       </div>
 
@@ -370,7 +373,18 @@
         })
       );
       await Promise.all(metricsRequests);
-      
+
+      const allTickers = allStocks.map(s => s.ticker).join(',');
+      try {
+        const profileRes = await fetch(`${SERVER_URL}/api/profile/batch?tickers=${allTickers}`);
+        const profiles = await profileRes.json();
+        Object.entries(profiles).forEach(([ticker, name]) => {
+          if (stockData[ticker]) stockData[ticker].name = name;
+        });
+      } catch (e) {
+        console.warn('Could not load company names', e);
+      }
+
       document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
       filterStocks();
     }
@@ -409,6 +423,10 @@
             const proxB = db?.high52Week ? (db.high52Week - db.price) / db.high52Week : Infinity;
             return proxA - proxB;
           }
+          case 'ticker_asc':
+            return a.ticker.localeCompare(b.ticker);
+          case 'ticker_desc':
+            return b.ticker.localeCompare(a.ticker);
           default:
             return 0;
         }
@@ -470,6 +488,7 @@
         
         card.innerHTML = `
           <div class="ticker">${stock.ticker}</div>
+          ${data.name ? `<div class="company-name">${data.name}</div>` : ''}
           <div class="category">${getCategoryLabel(stock.category)}</div>
           ${badgesHTML}
           <div class="price">$${data.price.toFixed(2)}</div>
