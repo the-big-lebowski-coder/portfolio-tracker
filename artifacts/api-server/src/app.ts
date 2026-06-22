@@ -14,6 +14,7 @@ import { logger } from "./lib/logger.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app: Express = express();
+app.set("etag", false); // prevent 304s so clients always get fresh market-cap data
 
 app.use(
   pinoHttp({

@@ -65,6 +65,45 @@ async function yahooFetch(url: string): Promise<unknown> {
   throw lastErr;
 }
 
+// Yahoo crumb — needed for v10/quoteSummary. Valid for ~24h, refresh on failure.
+let yahooCrumbCache: { crumb: string; cookies: string; fetchedAt: number } | null = null;
+
+async function getYahooCrumb(): Promise<{ crumb: string; cookies: string } | null> {
+  const TTL_MS = 20 * 60 * 60 * 1000; // 20 hours
+  if (yahooCrumbCache && Date.now() - yahooCrumbCache.fetchedAt < TTL_MS) {
+    return yahooCrumbCache;
+  }
+  try {
+    const r1 = await fetch("https://fc.yahoo.com", { headers: YAHOO_HEADERS });
+    const setCookieHeaders = r1.headers.getSetCookie?.() ?? [];
+    const cookies = setCookieHeaders.join("; ");
+
+    const r2 = await fetch("https://query1.finance.yahoo.com/v1/test/getcrumb", {
+      // crumb endpoint returns plain text — must NOT send Accept: application/json
+      headers: { "User-Agent": YAHOO_HEADERS["User-Agent"], Accept: "*/*", Cookie: cookies },
+    });
+    const crumb = (await r2.text()).trim();
+    if (!crumb || crumb === "null" || !r2.ok) return null;
+
+    yahooCrumbCache = { crumb, cookies, fetchedAt: Date.now() };
+    return yahooCrumbCache;
+  } catch {
+    return null;
+  }
+}
+
+async function yahooQuoteSummary(yahooSymbol: string, modules: string): Promise<unknown> {
+  const auth = await getYahooCrumb();
+  if (!auth) throw new Error("Could not obtain Yahoo crumb");
+
+  const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}?modules=${modules}&crumb=${encodeURIComponent(auth.crumb)}`;
+  const res = await fetch(url, {
+    headers: { ...YAHOO_HEADERS, Cookie: auth.cookies },
+  });
+  if (!res.ok) throw new Error(`Yahoo quoteSummary ${res.status}`);
+  return res.json();
+}
+
 type YahooMeta = {
   regularMarketPrice?: number;
   regularMarketDayHigh?: number;
@@ -141,13 +180,27 @@ async function yahooMetrics(ticker: string): Promise<unknown> {
   const raw = await fetchYahooChart(yahooSymbol, "1d", "1d");
   const meta = (raw.chart?.result?.[0]?.meta ?? {}) as YahooChartMeta;
 
+  // Market cap comes from the v10 price module (chart meta doesn't expose it)
+  let marketCapMillions: number | null = null;
+  try {
+    type PriceResp = {
+      quoteSummary?: {
+        result?: Array<{ price?: { marketCap?: { raw?: number } } }>;
+      };
+    };
+    const priceData = (await yahooQuoteSummary(yahooSymbol, "price")) as PriceResp;
+    const rawCap = priceData.quoteSummary?.result?.[0]?.price?.marketCap?.raw;
+    if (rawCap) marketCapMillions = rawCap / 1_000_000;
+  } catch {
+    // fall through — market cap stays null
+  }
+
   return {
     metric: {
       peNormalizedAnnual: meta.trailingPE ?? null,
       "52WeekHigh": meta.fiftyTwoWeekHigh ?? null,
       "52WeekLow": meta.fiftyTwoWeekLow ?? null,
-      // marketCap in raw dollars from Yahoo; convert to millions to match Finnhub
-      marketCapitalization: meta.marketCap ? meta.marketCap / 1_000_000 : null,
+      marketCapitalization: marketCapMillions,
       dividendYieldIndicatedAnnual: null,
       beta: null,
     },
@@ -158,13 +211,12 @@ async function yahooMetrics(ticker: string): Promise<unknown> {
 
 async function yahooProfile(ticker: string): Promise<string | null> {
   const yahooSymbol = toYahooSymbol(ticker);
-  const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(yahooSymbol)}?modules=price`;
   type YahooPriceModule = {
     quoteSummary?: {
       result?: Array<{ price?: { shortName?: string; longName?: string } }>;
     };
   };
-  const data = (await yahooFetch(url)) as YahooPriceModule;
+  const data = (await yahooQuoteSummary(yahooSymbol, "price")) as YahooPriceModule;
   const price = data.quoteSummary?.result?.[0]?.price;
   return price?.longName ?? price?.shortName ?? null;
 }
@@ -290,6 +342,7 @@ router.get("/metrics/:ticker", async (req: Request, res: Response) => {
   const ticker = String(req.params["ticker"]).toUpperCase();
   const cacheKey = `metrics:${ticker}`;
   const cached = getCached(cacheKey);
+  res.set("Cache-Control", "no-store");
   if (cached) { res.json(cached); return; }
 
   const data = useYahoo(ticker)
