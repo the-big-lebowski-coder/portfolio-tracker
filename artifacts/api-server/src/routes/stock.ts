@@ -1,5 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { getCached, setCached } from "../lib/cache.js";
+import { finnhubQueue } from "../lib/queue.js";
 
 const router: IRouter = Router();
 
@@ -29,7 +30,7 @@ router.get("/quote/:ticker", async (req: Request, res: Response) => {
     return;
   }
 
-  const data = await finnhubGet(`/quote?symbol=${ticker}`);
+  const data = await finnhubQueue.run(() => finnhubGet(`/quote?symbol=${ticker}`));
   setCached(cacheKey, data);
   res.json(data);
 });
@@ -43,7 +44,9 @@ router.get("/metrics/:ticker", async (req: Request, res: Response) => {
     return;
   }
 
-  const data = await finnhubGet(`/stock/metric?symbol=${ticker}&metric=all`);
+  const data = await finnhubQueue.run(() =>
+    finnhubGet(`/stock/metric?symbol=${ticker}&metric=all`),
+  );
   setCached(cacheKey, data);
   res.json(data);
 });
