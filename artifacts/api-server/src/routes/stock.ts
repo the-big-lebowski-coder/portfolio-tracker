@@ -132,6 +132,7 @@ type YahooChartMeta = YahooMeta & {
   fiftyTwoWeekLow?: number;
   trailingPE?: number;
   dividendsPerShare?: number;
+  marketCap?: number;
 };
 
 async function yahooMetrics(ticker: string): Promise<unknown> {
@@ -145,6 +146,8 @@ async function yahooMetrics(ticker: string): Promise<unknown> {
       peNormalizedAnnual: meta.trailingPE ?? null,
       "52WeekHigh": meta.fiftyTwoWeekHigh ?? null,
       "52WeekLow": meta.fiftyTwoWeekLow ?? null,
+      // marketCap in raw dollars from Yahoo; convert to millions to match Finnhub
+      marketCapitalization: meta.marketCap ? meta.marketCap / 1_000_000 : null,
       dividendYieldIndicatedAnnual: null,
       beta: null,
     },

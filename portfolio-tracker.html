@@ -240,8 +240,8 @@
           <p id="detailHigh52" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
         </div>
         <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
-          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">52-Week Low</p>
-          <p id="detailLow52" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
+          <p style="color: #999; font-size: 12px; margin: 0 0 4px;">Market Cap</p>
+          <p id="detailMarketCap" style="font-size: 20px; font-weight: 500; margin: 0;"></p>
         </div>
       </div>
 
@@ -417,7 +417,7 @@
         pe: data.metric.peTTM ? Math.round(data.metric.peTTM * 100) / 100 : null,
         forwardPE: data.metric.forwardPE ? Math.round(data.metric.forwardPE * 100) / 100 : null,
         high52Week: data.metric['52WeekHigh'] ? Math.round(data.metric['52WeekHigh'] * 100) / 100 : null,
-        low52Week: data.metric['52WeekLow'] ? Math.round(data.metric['52WeekLow'] * 100) / 100 : null,
+        marketCap: data.metric.marketCapitalization ?? null,
         error: false
       };
     }
@@ -482,6 +482,13 @@
 
       document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
       filterStocks();
+    }
+
+    function formatMarketCap(capInMillions) {
+      if (!capInMillions) return 'N/A';
+      if (capInMillions >= 1_000_000) return `$${(capInMillions / 1_000_000).toFixed(2)}T`;
+      if (capInMillions >= 1_000) return `$${(capInMillions / 1_000).toFixed(2)}B`;
+      return `$${capInMillions.toFixed(0)}M`;
     }
 
     function checkIs52WeekHigh(price, high52Week) {
@@ -622,7 +629,7 @@
       document.getElementById('detailPE').textContent = data.pe ? data.pe.toFixed(2) : 'N/A';
       document.getElementById('detailForwardPE').textContent = data.forwardPE ? data.forwardPE.toFixed(2) : 'N/A';
       document.getElementById('detailHigh52').textContent = data.high52Week ? `$${data.high52Week.toFixed(2)}` : 'N/A';
-      document.getElementById('detailLow52').textContent = data.low52Week ? `$${data.low52Week.toFixed(2)}` : 'N/A';
+      document.getElementById('detailMarketCap').textContent = data.marketCap ? formatMarketCap(data.marketCap) : 'N/A';
       
       document.getElementById('detailModal').classList.add('active');
       currentChartType = '1y';
