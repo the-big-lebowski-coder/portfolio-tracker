@@ -411,10 +411,12 @@ router.get("/metrics/:ticker", async (req: Request, res: Response) => {
 const PERIOD_MAP: Record<string, { range: string; interval: string }> = {
   "1d": { range: "1d", interval: "5m" },
   "1w": { range: "5d", interval: "15m" },
-  "1m": { range: "1mo", interval: "1h" },
+  "1m": { range: "1mo", interval: "1d" },
+  "6m": { range: "6mo", interval: "1d" },
   "3m": { range: "3mo", interval: "1d" },
   "1y": { range: "1y", interval: "1wk" },
   "5y": { range: "5y", interval: "1mo" },
+  "10y": { range: "10y", interval: "1mo" },
 };
 
 router.get(
