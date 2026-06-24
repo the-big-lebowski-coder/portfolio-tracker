@@ -9,6 +9,10 @@ if (!rawPort) {
   );
 }
 
+if (!process.env["FINNHUB_API_KEY"]) {
+  throw new Error("FINNHUB_API_KEY environment variable is required but was not provided.");
+}
+
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
