@@ -3,8 +3,8 @@ services:
     name: portfolio-tracker
     runtime: node
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build
-    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    buildCommand: pnpm install --frozen-lockfile
+    startCommand: pnpm --filter @workspace/api-server run build && node --enable-source-maps artifacts/api-server/dist/index.mjs
     healthCheckPath: /api/healthz
     envVars:
       - key: NODE_ENV
