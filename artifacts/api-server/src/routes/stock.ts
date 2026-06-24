@@ -325,6 +325,60 @@ router.get("/metrics/batch", async (req: Request, res: Response) => {
   res.json(out);
 });
 
+router.get("/premarket/batch", async (req: Request, res: Response) => {
+  const tickers = parseTickers(req.query["tickers"]);
+  if (!tickers) {
+    res.status(400).json({ error: `Provide ?tickers=AAPL,MSFT,... (max ${MAX_BATCH})` });
+    return;
+  }
+
+  const results = await Promise.all(
+    tickers.map(async (ticker) => {
+      const cacheKey = `premarket:${ticker}`;
+      const cached = getCached(cacheKey);
+      if (cached) return { ticker, data: cached };
+
+      try {
+        const yahooSymbol = toYahooSymbol(ticker);
+        type PriceModule = {
+          quoteSummary?: {
+            result?: Array<{
+              price?: {
+                marketState?: string;
+                preMarketPrice?: { raw?: number };
+                preMarketChange?: { raw?: number };
+                preMarketChangePercent?: { raw?: number };
+                postMarketPrice?: { raw?: number };
+                postMarketChange?: { raw?: number };
+                postMarketChangePercent?: { raw?: number };
+              };
+            }>;
+          };
+        };
+        const raw = (await yahooQuoteSummary(yahooSymbol, "price")) as PriceModule;
+        const p = raw.quoteSummary?.result?.[0]?.price;
+        const result = {
+          marketState: p?.marketState ?? "CLOSED",
+          preMarketPrice: p?.preMarketPrice?.raw ?? null,
+          preMarketChange: p?.preMarketChange?.raw ?? null,
+          preMarketChangePct: p?.preMarketChangePercent?.raw != null ? p.preMarketChangePercent!.raw! * 100 : null,
+          postMarketPrice: p?.postMarketPrice?.raw ?? null,
+          postMarketChange: p?.postMarketChange?.raw ?? null,
+          postMarketChangePct: p?.postMarketChangePercent?.raw != null ? p.postMarketChangePercent!.raw! * 100 : null,
+        };
+        setCached(cacheKey, result);
+        return { ticker, data: result };
+      } catch {
+        return { ticker, data: null };
+      }
+    }),
+  );
+
+  const out: Record<string, unknown> = {};
+  for (const r of results) out[r.ticker] = r.data;
+  res.json(out);
+});
+
 router.get("/quote/:ticker", async (req: Request, res: Response) => {
   const ticker = String(req.params["ticker"]).toUpperCase();
   const cacheKey = `quote:${ticker}`;

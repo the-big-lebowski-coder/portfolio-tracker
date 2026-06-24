@@ -41,6 +41,10 @@
     .change { font-size: 14px; font-weight: 500; }
     .change.up { color: #4caf50; }
     .change.down { color: #f44336; }
+    .premarket-info { font-size: 11px; color: #888; margin-top: 3px; }
+    .premarket-info .premarket-label { font-weight: 600; }
+    .premarket-info .up { color: #4caf50; }
+    .premarket-info .down { color: #f44336; }
     .ticker-row { display: flex; align-items: baseline; gap: 6px; }
     .company-name { font-size: 12px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .high52 { font-size: 12px; color: #999; margin-top: 4px; }
@@ -476,6 +480,16 @@
       } catch (e) {
         console.warn('Could not load company names', e);
       }
+
+      try {
+        const preRes = await fetch(`${SERVER_URL}/api/premarket/batch?tickers=${allTickers}`);
+        const preData = await preRes.json();
+        Object.entries(preData).forEach(([ticker, pre]) => {
+          if (stockData[ticker]) stockData[ticker].preMarket = pre;
+        });
+      } catch (e) {
+        console.warn('Could not load pre-market data', e);
+      }
       
       document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
       filterStocks();
@@ -597,6 +611,19 @@
           <div class="change ${changeClass}">
             ${data.change > 0 ? '+' : ''}${data.changePercent.toFixed(2)}% (${data.change > 0 ? '+' : ''}$${data.change.toFixed(2)})
           </div>
+          ${(() => {
+            const pm = data.preMarket;
+            if (!pm) return '';
+            if (pm.marketState === 'PRE' && pm.preMarketPrice) {
+              const cls = pm.preMarketChange > 0 ? 'up' : pm.preMarketChange < 0 ? 'down' : '';
+              return `<div class="premarket-info"><span class="premarket-label">Pre-mkt:</span> $${pm.preMarketPrice.toFixed(2)} <span class="${cls}">${pm.preMarketChange > 0 ? '+' : ''}${pm.preMarketChangePct.toFixed(2)}%</span></div>`;
+            }
+            if ((pm.marketState === 'POST' || pm.marketState === 'CLOSED') && pm.postMarketPrice) {
+              const cls = pm.postMarketChange > 0 ? 'up' : pm.postMarketChange < 0 ? 'down' : '';
+              return `<div class="premarket-info"><span class="premarket-label">After-hrs:</span> $${pm.postMarketPrice.toFixed(2)} <span class="${cls}">${pm.postMarketChange > 0 ? '+' : ''}${pm.postMarketChangePct.toFixed(2)}%</span></div>`;
+            }
+            return '';
+          })()}
           ${data.high52Week ? `<div class="high52">52w high: $${data.high52Week.toFixed(2)}</div>` : ''}
           <div class="metrics">
             <div class="metric-row">
