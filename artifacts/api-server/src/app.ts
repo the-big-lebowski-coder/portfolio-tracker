@@ -13,11 +13,8 @@ import { logger } from "./lib/logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const workspaceRoot = process.cwd().endsWith(path.join("artifacts", "api-server"))
-  ? path.resolve(process.cwd(), "../..")
-  : process.cwd();
-
-const piggyBankDir = path.resolve(workspaceRoot, "artifacts/piggy-bank/dist/public");
+// __dirname = artifacts/api-server/dist/ — piggy bank is built here after server bundle
+const piggyBankDir = path.resolve(__dirname, "piggy-bank");
 
 const app: Express = express();
 app.set("etag", false); // prevent 304s so clients always get fresh market-cap data

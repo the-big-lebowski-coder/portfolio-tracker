@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     buildCommand: pnpm install --frozen-lockfile
-    startCommand: pnpm --filter @workspace/db run push && BASE_PATH=/piggy-bank/ pnpm --filter @workspace/piggy-bank run build && pnpm --filter @workspace/api-server run build && node --enable-source-maps artifacts/api-server/dist/index.mjs
+    startCommand: pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run build && BASE_PATH=/piggy-bank/ pnpm --filter @workspace/piggy-bank run build && node --enable-source-maps artifacts/api-server/dist/index.mjs
     healthCheckPath: /api/healthz
     envVars:
       - key: NODE_ENV
