@@ -13,6 +13,12 @@ import { logger } from "./lib/logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const workspaceRoot = process.cwd().endsWith(path.join("artifacts", "api-server"))
+  ? path.resolve(process.cwd(), "../..")
+  : process.cwd();
+
+const piggyBankDir = path.resolve(workspaceRoot, "artifacts/piggy-bank/dist/public");
+
 const app: Express = express();
 app.set("etag", false); // prevent 304s so clients always get fresh market-cap data
 
@@ -40,6 +46,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Serve piggy bank React app at /piggy-bank/
+app.use("/piggy-bank", express.static(piggyBankDir));
+app.get("/piggy-bank/{*path}", (_req, res) => {
+  res.sendFile(path.join(piggyBankDir, "index.html"));
+});
 
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "..", "portfolio-tracker.html"));
