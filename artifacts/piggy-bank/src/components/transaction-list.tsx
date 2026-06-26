@@ -17,9 +17,9 @@ export function TransactionList() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('he-IL', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ILS',
     }).format(amount);
   };
 
@@ -28,8 +28,8 @@ export function TransactionList() {
     deleteTransaction.mutate({ id }, {
       onSuccess: () => {
         toast({
-          title: "Removed",
-          description: "Transaction has been deleted.",
+          title: "נמחק",
+          description: "העסקה נמחקה בהצלחה.",
         });
         queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetBalanceQueryKey() });
@@ -38,8 +38,8 @@ export function TransactionList() {
       },
       onError: () => {
         toast({
-          title: "Error",
-          description: "Failed to delete transaction.",
+          title: "שגיאה",
+          description: "לא ניתן למחוק את העסקה.",
           variant: "destructive",
         });
         setDeletingId(null);
@@ -65,9 +65,9 @@ export function TransactionList() {
             <Coins className="h-12 w-12 text-primary" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-foreground">No transactions yet</h3>
+            <h3 className="text-xl font-bold text-foreground">אין עסקאות עדיין</h3>
             <p className="text-muted-foreground max-w-sm">
-              Your piggy bank is waiting! Add your first allowance or gift to start watching your savings grow.
+              קופת החיסכון שלך מחכה! הוסף את הכנסה או מתנה ראשונה כדי להתחיל לחסוך.
             </p>
           </div>
         </CardContent>
@@ -77,21 +77,21 @@ export function TransactionList() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-foreground mb-6">Recent History</h2>
+      <h2 className="text-xl font-bold text-foreground mb-6">היסטוריה אחרונה</h2>
       {transactions.map((tx, index) => {
         const isIncome = tx.type === "income";
         const isDeleting = deletingId === tx.id;
 
         return (
-          <div 
-            key={tx.id} 
+          <div
+            key={tx.id}
             className={cn(
               "group relative overflow-hidden bg-card rounded-2xl p-4 shadow-sm border border-border/50 flex items-center justify-between transition-all hover:shadow-md hover:border-border",
               isDeleting && "opacity-50 pointer-events-none scale-[0.98]"
             )}
-            style={{ 
+            style={{
               animationDelay: `${index * 50}ms`,
-              animationFillMode: 'both' 
+              animationFillMode: 'both'
             }}
             data-testid={`card-transaction-${tx.id}`}
           >
@@ -107,7 +107,7 @@ export function TransactionList() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="font-medium bg-muted px-2 py-0.5 rounded-md text-xs">{tx.category}</span>
                   <span>&bull;</span>
-                  <span>{format(new Date(tx.date), "MMM d, yyyy")}</span>
+                  <span>{format(new Date(tx.date), "d/M/yyyy")}</span>
                 </div>
               </div>
             </div>
@@ -125,7 +125,7 @@ export function TransactionList() {
                 className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                 onClick={() => handleDelete(tx.id)}
                 disabled={isDeleting}
-                title="Delete transaction"
+                title="מחק עסקה"
                 data-testid={`button-delete-tx-${tx.id}`}
               >
                 <Trash2 className="h-4 w-4" />

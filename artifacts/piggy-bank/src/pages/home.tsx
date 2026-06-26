@@ -11,10 +11,10 @@ export default function Home() {
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-rose-400">
-                Piggy Bank
+                קופת החיסכון
               </span>
             </h1>
-            <p className="text-muted-foreground font-medium mt-1">Watch your savings grow</p>
+            <p className="text-muted-foreground font-medium mt-1">תראו איך החיסכון שלכם גדל</p>
           </div>
           <div className="hidden sm:block">
             <TransactionForm />

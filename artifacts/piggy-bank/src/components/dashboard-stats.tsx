@@ -8,9 +8,9 @@ export function DashboardStats() {
   const { data: summary, isLoading: summaryLoading } = useGetSummary();
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('he-IL', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ILS',
     }).format(amount);
   };
 
@@ -20,7 +20,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-primary-foreground/80 font-medium text-lg flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            Current Balance
+            יתרה נוכחית
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -38,7 +38,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground font-medium text-sm flex items-center gap-2">
             <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
-            Total Saved
+            סה״כ הכנסות
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -56,7 +56,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground font-medium text-sm flex items-center gap-2">
             <ArrowDownCircle className="h-4 w-4 text-rose-500" />
-            Total Spent
+            סה״כ הוצאות
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -74,7 +74,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground font-medium text-sm flex items-center gap-2">
             <Wallet className="h-4 w-4 text-secondary" />
-            Total Transactions
+            סה״כ פעולות
           </CardTitle>
         </CardHeader>
         <CardContent>
