@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/piggy-bank/"
+title = "Piggy Bank"
+version = "1.0.0"
+id = "artifacts/piggy-bank"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/piggy-bank/" ]
+localPort = 19258
+
+[services.development]
+run = "pnpm --filter @workspace/piggy-bank run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/piggy-bank", "run", "build" ]
+publicDir = "artifacts/piggy-bank/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19258"
+BASE_PATH = "/piggy-bank/"

@@ -10,13 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: transactions
+    description: Bank account transactions
+  - name: balance
+    description: Account balance
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +27,88 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /bank/transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List all transactions, newest first
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Add a new transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Validation error
+
+  /bank/transactions/{id}:
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Delete a transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+
+  /bank/balance:
+    get:
+      operationId: getBalance
+      tags: [balance]
+      summary: Get current account balance
+      responses:
+        "200":
+          description: Current balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+
+  /bank/summary:
+    get:
+      operationId: getSummary
+      tags: [balance]
+      summary: Get summary stats (income, expenses, counts)
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +119,68 @@ components:
       required:
         - status
 
+    Transaction:
+      type: object
+      required: [id, type, amount, description, category, date, balanceAfter, createdAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: number
+        description:
+          type: string
+        category:
+          type: string
+        date:
+          type: string
+          format: date
+        balanceAfter:
+          type: number
+        createdAt:
+          type: string
+
+    TransactionInput:
+      type: object
+      required: [type, amount, description, category, date]
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: number
+          minimum: 0.01
+        description:
+          type: string
+          minLength: 1
+        category:
+          type: string
+        date:
+          type: string
+          format: date
+
+    Balance:
+      type: object
+      required: [balance, initialBalance]
+      properties:
+        balance:
+          type: number
+        initialBalance:
+          type: number
+
+    Summary:
+      type: object
+      required: [totalIncome, totalExpenses, transactionCount, incomeCount, expenseCount]
+      properties:
+        totalIncome:
+          type: number
+        totalExpenses:
+          type: number
+        transactionCount:
+          type: integer
+        incomeCount:
+          type: integer
+        expenseCount:
+          type: integer
