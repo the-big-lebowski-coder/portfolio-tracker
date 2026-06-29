@@ -446,6 +446,16 @@
       }
     }
 
+    async function fetchPEHistory(ticker) {
+      try {
+        const response = await fetch(`${SERVER_URL}/api/pe-history/${ticker}`);
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching PE history for', ticker, error);
+        return [];
+      }
+    }
+
     async function loadAllStockData() {
       const isConnected = await checkServer();
       if (!isConnected) {
@@ -668,15 +678,23 @@
 
     async function loadChart(ticker, period) {
       try {
-        const prices = await fetchHistoricalData(ticker, period);
+        const showPE = period === '5y' || period === '10y';
+
+        const [prices, peHistory] = await Promise.all([
+          fetchHistoricalData(ticker, period),
+          showPE ? fetchPEHistory(ticker) : Promise.resolve([]),
+        ]);
         
         if (prices.length === 0) {
           const canvas = document.getElementById('priceChart');
           canvas.parentElement.innerHTML = '<p style="color: #999; padding: 2rem; text-align: center;">No chart data available</p>';
           return;
         }
-        
-        const labels = prices.map(p => p.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+        const longPeriod = period === '5y' || period === '10y';
+        const labels = prices.map(p => p.date.toLocaleDateString('en-US',
+          longPeriod ? { month: 'short', year: '2-digit' } : { month: 'short', day: 'numeric' }
+        ));
         const values = prices.map(p => p.price);
 
         const canvasElement = document.getElementById('priceChart');
@@ -687,31 +705,69 @@
         }
 
         const ctx = canvasElement.getContext('2d');
-        
+
+        // Align PE data to price dates
+        let peValues = [];
+        if (showPE && peHistory.length > 0) {
+          const peDateMap = new Map(peHistory.map(d => [d.date, d.pe]));
+          peValues = prices.map(p => peDateMap.get(p.date.toISOString().split('T')[0]) ?? null);
+        }
+
+        const hasPE = peValues.some(v => v !== null);
+
+        const datasets = [{
+          label: ticker + ' Price',
+          data: values,
+          borderColor: '#378ADD',
+          backgroundColor: 'rgba(55, 138, 221, 0.1)',
+          tension: 0.1,
+          fill: true,
+          pointRadius: 0,
+          borderWidth: 2,
+          yAxisID: 'yPrice',
+        }];
+
+        if (hasPE) {
+          datasets.push({
+            label: 'P/E Ratio (TTM)',
+            data: peValues,
+            borderColor: '#F59E0B',
+            backgroundColor: 'transparent',
+            tension: 0.1,
+            fill: false,
+            pointRadius: 0,
+            borderWidth: 2,
+            borderDash: [5, 5],
+            yAxisID: 'yPE',
+          });
+        }
+
+        const scales = {
+          yPrice: {
+            beginAtZero: false,
+            position: 'left',
+            title: { display: true, text: 'Price ($)' },
+          },
+        };
+        if (hasPE) {
+          scales.yPE = {
+            beginAtZero: false,
+            position: 'right',
+            title: { display: true, text: 'P/E Ratio' },
+            grid: { drawOnChartArea: false },
+          };
+        }
+
         currentChart = new Chart(ctx, {
           type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: ticker + ' Price',
-              data: values,
-              borderColor: '#378ADD',
-              backgroundColor: 'rgba(55, 138, 221, 0.1)',
-              tension: 0.1,
-              fill: true,
-              pointRadius: 0,
-              borderWidth: 2
-            }]
-          },
+          data: { labels, datasets },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
               legend: { display: true }
             },
-            scales: {
-              y: { beginAtZero: false }
-            }
+            scales,
           }
         });
       } catch (error) {

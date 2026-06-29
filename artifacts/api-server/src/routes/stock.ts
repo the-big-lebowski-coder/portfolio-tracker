@@ -120,6 +120,9 @@ type YahooChart = {
       timestamp?: number[];
       indicators?: { quote?: Array<{ close?: (number | null)[] }> };
       meta?: YahooMeta;
+      events?: {
+        earnings?: Record<string, { date?: number; actual?: number | null; estimate?: number | null }>;
+      };
     }>;
     error?: { description?: string };
   };
@@ -129,11 +132,30 @@ async function fetchYahooChart(
   yahooSymbol: string,
   range: string,
   interval: string,
+  events?: string,
 ): Promise<YahooChart> {
-  const path = `/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=${range}&interval=${interval}&includeTimestamps=true`;
+  const eventsParam = events ? `&events=${events}` : "";
+  const path = `/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=${range}&interval=${interval}&includeTimestamps=true${eventsParam}`;
   return (await yahooFetch(
     `https://query1.finance.yahoo.com${path}`,
   )) as YahooChart;
+}
+
+async function fetchYahooChartAuth(
+  yahooSymbol: string,
+  range: string,
+  interval: string,
+  events?: string,
+): Promise<YahooChart> {
+  const auth = await getYahooCrumb();
+  const eventsParam = events ? `&events=${events}` : "";
+  const crumbParam = auth ? `&crumb=${encodeURIComponent(auth.crumb)}` : "";
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=${range}&interval=${interval}&includeTimestamps=true${eventsParam}${crumbParam}`;
+  if (auth) {
+    const res = await fetch(url, { headers: { ...YAHOO_HEADERS, Cookie: auth.cookies } });
+    if (res.ok) return res.json() as Promise<YahooChart>;
+  }
+  return (await yahooFetch(url)) as YahooChart;
 }
 
 async function yahooQuote(ticker: string): Promise<{
@@ -406,6 +428,82 @@ router.get("/metrics/:ticker", async (req: Request, res: Response) => {
       );
   setCached(cacheKey, data);
   res.json(data);
+});
+
+router.get("/pe-history/:ticker", async (req: Request, res: Response) => {
+  const ticker = String(req.params["ticker"]).toUpperCase();
+  const cacheKey = `pe-history:${ticker}`;
+  const cached = getCached(cacheKey);
+  if (cached) { res.json(cached); return; }
+
+  const yahooSymbol = toYahooSymbol(ticker);
+
+  // ── 1. Recent quarterly EPS from earningsHistory (last 4 quarters) ──────
+  type EHResp = {
+    quoteSummary?: { result?: Array<{ earningsHistory?: { history?: Array<{ epsActual?: { raw?: number }; quarter?: { raw?: number } }> } }> };
+  };
+  const ehRaw = (await yahooQuoteSummary(yahooSymbol, "earningsHistory")) as EHResp;
+  const recentQuarters = (ehRaw?.quoteSummary?.result?.[0]?.earningsHistory?.history ?? [])
+    .filter((e) => e.epsActual?.raw != null && e.quarter?.raw)
+    .map((e) => ({ ts: (e.quarter!.raw!) * 1000, eps: e.epsActual!.raw! }))
+    .sort((a, b) => a.ts - b.ts);
+
+  // ── 2. Annual netIncome from incomeStatementHistory ──────────────────────
+  type ISResp = {
+    quoteSummary?: { result?: Array<{ incomeStatementHistory?: { incomeStatementHistory?: Array<{ endDate?: { raw?: number }; netIncome?: { raw?: number } }> }; defaultKeyStatistics?: { sharesOutstanding?: { raw?: number }; impliedSharesOutstanding?: { raw?: number } } }> };
+  };
+  const isRaw = (await yahooQuoteSummary(yahooSymbol, "incomeStatementHistory,defaultKeyStatistics")) as ISResp;
+  const isRes = isRaw?.quoteSummary?.result?.[0];
+  const shares =
+    isRes?.defaultKeyStatistics?.impliedSharesOutstanding?.raw ??
+    isRes?.defaultKeyStatistics?.sharesOutstanding?.raw ?? 0;
+
+  // Build synthetic quarterly data from annual netIncome (4 quarters per year)
+  const annualEntries = isRes?.incomeStatementHistory?.incomeStatementHistory ?? [];
+  const syntheticQuarters: { ts: number; eps: number }[] = [];
+  for (const entry of annualEntries) {
+    const yearEndTs = (entry.endDate?.raw ?? 0) * 1000;
+    const netIncome = entry.netIncome?.raw;
+    if (!netIncome || !shares || yearEndTs === 0 || yearEndTs > Date.now()) continue;
+    const qEps = (netIncome / shares) / 4;
+    for (let q = 0; q < 4; q++) {
+      syntheticQuarters.push({ ts: yearEndTs - q * 91 * 24 * 60 * 60 * 1000, eps: qEps });
+    }
+  }
+
+  // Merge synthetic (older) with real quarterly (recent), real takes priority
+  const recentTsSet = new Set(recentQuarters.map((q) => q.ts));
+  const allQuarters = [
+    ...syntheticQuarters.filter((q) => !recentTsSet.has(q.ts)),
+    ...recentQuarters,
+  ].sort((a, b) => a.ts - b.ts);
+
+  if (allQuarters.length === 0) { res.json([]); return; }
+
+  const chartRaw = await fetchYahooChart(yahooSymbol, "10y", "1mo");
+  const result = chartRaw.chart?.result?.[0];
+  const timestamps = result?.timestamp ?? [];
+  const closes = result?.indicators?.quote?.[0]?.close ?? [];
+
+  const peData = timestamps
+    .map((t, i) => {
+      const price = closes[i];
+      if (!price) return null;
+      const ts = t * 1000;
+      const prior = allQuarters.filter((q) => q.ts <= ts);
+      const last4 = prior.slice(-4);
+      if (last4.length < 4) return null;
+      const ttmEps = last4.reduce((sum, q) => sum + q.eps, 0);
+      if (ttmEps <= 0) return null;
+      return {
+        date: new Date(ts).toISOString().split("T")[0],
+        pe: parseFloat((price / ttmEps).toFixed(2)),
+      };
+    })
+    .filter((d): d is { date: string; pe: number } => d !== null);
+
+  setCached(cacheKey, peData);
+  res.json(peData);
 });
 
 const PERIOD_MAP: Record<string, { range: string; interval: string }> = {
