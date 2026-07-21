@@ -4,6 +4,17 @@ import { format } from "date-fns";
 import { ArrowDownRight, ArrowUpRight, Trash2, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -86,7 +97,7 @@ export function TransactionList() {
           <div
             key={tx.id}
             className={cn(
-              "group relative overflow-hidden bg-card rounded-2xl p-4 shadow-sm border border-border/50 flex items-center justify-between transition-all hover:shadow-md hover:border-border",
+              "relative overflow-hidden bg-card rounded-2xl p-4 shadow-sm border border-border/50 flex items-center justify-between transition-all hover:shadow-md hover:border-border",
               isDeleting && "opacity-50 pointer-events-none scale-[0.98]"
             )}
             style={{
@@ -112,24 +123,45 @@ export function TransactionList() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className={cn(
                 "text-lg font-bold",
                 isIncome ? "text-emerald-600" : "text-foreground"
               )}>
                 {isIncome ? "+" : "-"}{formatCurrency(tx.amount)}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
-                onClick={() => handleDelete(tx.id)}
-                disabled={isDeleting}
-                title="מחק עסקה"
-                data-testid={`button-delete-tx-${tx.id}`}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                    disabled={isDeleting}
+                    title="מחק עסקה"
+                    data-testid={`button-delete-tx-${tx.id}`}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>מחיקת עסקה</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      האם את רוצה למחוק את העסקה?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-row-reverse gap-2">
+                    <AlertDialogAction
+                      onClick={() => handleDelete(tx.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      כן
+                    </AlertDialogAction>
+                    <AlertDialogCancel>לא</AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         );
