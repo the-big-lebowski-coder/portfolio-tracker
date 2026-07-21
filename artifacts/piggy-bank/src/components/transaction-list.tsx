@@ -1,7 +1,7 @@
 import { useListTransactions, useDeleteTransaction, getListTransactionsQueryKey, getGetBalanceQueryKey, getGetSummaryQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
-import { ArrowDownRight, ArrowUpRight, Trash2, Coins } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Trash2, Coins, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -19,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import * as XLSX from "xlsx";
 
 export function TransactionList() {
   const { data: transactions, isLoading } = useListTransactions();
@@ -59,6 +60,35 @@ export function TransactionList() {
     });
   };
 
+  const handleExport = () => {
+    if (!transactions || transactions.length === 0) return;
+
+    const rows = transactions.map((tx) => ({
+      "תאריך": format(new Date(tx.date), "d/M/yyyy"),
+      "סוג": tx.type === "income" ? "הכנסה" : "הוצאה",
+      "תיאור": tx.description,
+      "קטגוריה": tx.category,
+      "סכום (₪)": Number(tx.amount),
+      "יתרה לאחר (₪)": Number(tx.balanceAfter),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false });
+
+    // RTL column widths
+    ws["!cols"] = [
+      { wch: 12 },
+      { wch: 10 },
+      { wch: 24 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 18 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "עסקאות");
+    XLSX.writeFile(wb, `קופת-החיסכון-${format(new Date(), "dd-MM-yyyy")}.xlsx`);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -89,7 +119,19 @@ export function TransactionList() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-foreground mb-6">היסטוריה אחרונה</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-foreground">היסטוריה אחרונה</h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          className="flex items-center gap-2 text-sm"
+        >
+          <Download className="h-4 w-4" />
+          ייצוא לאקסל
+        </Button>
+      </div>
+
       {transactions.map((tx, index) => {
         const isIncome = tx.type === "income";
         const isDeleting = deletingId === tx.id;
