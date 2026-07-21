@@ -19,7 +19,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import * as XLSX from "xlsx";
 
 export function TransactionList() {
   const { data: transactions, isLoading } = useListTransactions();
@@ -63,30 +62,28 @@ export function TransactionList() {
   const handleExport = () => {
     if (!transactions || transactions.length === 0) return;
 
-    const rows = transactions.map((tx) => ({
-      "תאריך": format(new Date(tx.date), "d/M/yyyy"),
-      "סוג": tx.type === "income" ? "הכנסה" : "הוצאה",
-      "תיאור": tx.description,
-      "קטגוריה": tx.category,
-      "סכום (₪)": Number(tx.amount),
-      "יתרה לאחר (₪)": Number(tx.balanceAfter),
-    }));
+    const headers = ["תאריך", "סוג", "תיאור", "קטגוריה", "סכום (₪)", "יתרה לאחר (₪)"];
+    const rows = transactions.map((tx) => [
+      format(new Date(tx.date), "d/M/yyyy"),
+      tx.type === "income" ? "הכנסה" : "הוצאה",
+      tx.description,
+      tx.category,
+      Number(tx.amount),
+      Number(tx.balanceAfter),
+    ]);
 
-    const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false });
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
 
-    // RTL column widths
-    ws["!cols"] = [
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 24 },
-      { wch: 14 },
-      { wch: 14 },
-      { wch: 18 },
-    ];
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "עסקאות");
-    XLSX.writeFile(wb, `קופת-החיסכון-${format(new Date(), "dd-MM-yyyy")}.xlsx`);
+    // BOM for Hebrew characters to render correctly in Excel
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `קופת-החיסכון-${format(new Date(), "dd-MM-yyyy")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) {

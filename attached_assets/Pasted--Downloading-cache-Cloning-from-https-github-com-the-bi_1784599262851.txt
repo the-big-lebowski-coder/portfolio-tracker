@@ -1,0 +1,99 @@
+==> Downloading cache...
+==> Cloning from https://github.com/the-big-lebowski-coder/portfolio-tracker
+==> Checking out commit fef3fd81f232556461ec98bb72349c6646db2638 in branch main
+==> Downloaded 90MB in 4s. Extraction took 3s.
+==> Requesting Node.js version 24
+==> Using Node.js version 24.18.0 via /opt/render/project/src/.node-version
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Installing Node.js version 24.18.0...
+==> Running build command 'pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build'...
+> @workspace/api-server@0.0.0 build /opt/render/project/src/artifacts/api-server
+> node ./build.mjs
+  dist/index.mjs                       2.2mb ⚠️
+  dist/pino-worker.mjs               153.4kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.6kb
+  dist/thread-stream-worker.mjs        7.3kb
+  dist/index.mjs.map                   3.8mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.0kb
+  dist/pino-pretty.mjs.map           204.0kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+⚡ Done in 462ms
+==> Uploading build...
+==> Uploaded in 3.6s. Compression took 9.6s
+==> Build successful 🎉
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run build && BASE_PATH=/piggy-bank/ pnpm --filter @workspace/piggy-bank run build && cp -r artifacts/piggy-bank/dist/public artifacts/api-server/dist/piggy-bank && node --enable-source-maps artifacts/api-server/dist/index.mjs'
+> @workspace/db@0.0.0 push /opt/render/project/src/lib/db
+> drizzle-kit push --config ./drizzle.config.ts
+Reading config file '/opt/render/project/src/lib/db/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+(node:85) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣻] Pulling schema from database...
+[⣽] Pulling schema from database...
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣻] Pulling schema from database...
+[✓] Pulling schema from database...
+[i] No changes detected
+> @workspace/api-server@0.0.0 build /opt/render/project/src/artifacts/api-server
+> node ./build.mjs
+  dist/index.mjs                       2.2mb ⚠️
+  dist/pino-worker.mjs               153.4kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.6kb
+  dist/thread-stream-worker.mjs        7.3kb
+  dist/index.mjs.map                   3.8mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.0kb
+  dist/pino-pretty.mjs.map           204.0kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+⚡ Done in 6497ms
+> @workspace/piggy-bank@0.0.0 build /opt/render/project/src/artifacts/piggy-bank
+> vite build --config vite.config.ts
+vite v7.3.3 building client environment for production...
+transforming...
+src/components/ui/tooltip.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+==> No open ports detected, continuing to scan...
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+src/components/ui/calendar.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+src/components/ui/select.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+src/components/ui/label.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+==> No open ports detected, continuing to scan...
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+<--- Last few GCs --->
+[163:0x461a1000]    85296 ms: Mark-Compact (reduce) 253.1 (257.3) -> 252.3 (256.5) MB, pooled: 0 MB, 1503.04 / 0.00 ms  (+ 893.9 ms in 13 steps since start of marking, biggest step 99.7 ms, walltime since start of marking 2694 ms) (average mu = 0.273, cur[163:0x461a1000]    88395 ms: Mark-Compact 253.4 (257.0) -> 252.2 (258.0) MB, pooled: 0 MB, 3002.00 / 0.00 ms  (average mu = 0.157, current mu = 0.031) allocation failure; scavenge might not succeed
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+ 1: 0x74eae8 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+ 2: 0xc42680  [node]
+ 3: 0xc4276f  [node]
+ 4: 0xee5fc5  [node]
+ 5: 0xee5ff2  [node]
+ 6: 0xee62ea  [node]
+ 7: 0xef6fea  [node]
+ 8: 0xefb390  [node]
+ 9: 0x198d931  [node]
+Aborted (core dumped)
+/opt/render/project/src/artifacts/piggy-bank:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/piggy-bank@0.0.0 build: `vite build --config vite.config.ts`
+Exit status 134
+==> Exited with status 134
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run build && BASE_PATH=/piggy-bank/ pnpm --filter @workspace/piggy-bank run build && cp -r artifacts/piggy-bank/dist/public artifacts/api-server/dist/piggy-bank && node --enable-source-maps artifacts/api-server/dist/index.mjs'
