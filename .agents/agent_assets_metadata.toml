@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "HUc1VZfwYhf0EgNxGIyNP"
+uri = "file://piggy-bank-setup-guide.md"
+type = "text"
+title = "Piggy Bank – Setup Guide"
+description = "Step-by-step instructions for a friend to deploy their own copy of the Piggy Bank app, including GitHub fork, Neon database setup, and Render deployment."
