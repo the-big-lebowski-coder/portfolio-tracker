@@ -89,3 +89,76 @@ export const GetSummaryResponse = zod.object({
 })
 
 
+/**
+ * @summary List all Rona transactions, newest first
+ */
+export const ListRonaTransactionsResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['income', 'expense']),
+  "amount": zod.number(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "date": zod.coerce.date(),
+  "balanceAfter": zod.number(),
+  "createdAt": zod.string()
+})
+export const ListRonaTransactionsResponse = zod.array(ListRonaTransactionsResponseItem)
+
+
+/**
+ * @summary Add a new Rona transaction
+ */
+export const createRonaTransactionBodyAmountMin = 0.01;
+
+
+
+
+export const CreateRonaTransactionBody = zod.object({
+  "type": zod.enum(['income', 'expense']),
+  "amount": zod.number().min(createRonaTransactionBodyAmountMin),
+  "description": zod.string().min(1),
+  "category": zod.string(),
+  "date": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a Rona transaction by ID
+ */
+export const DeleteRonaTransactionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteRonaTransactionResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['income', 'expense']),
+  "amount": zod.number(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "date": zod.coerce.date(),
+  "balanceAfter": zod.number(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Get Rona current account balance
+ */
+export const GetRonaBalanceResponse = zod.object({
+  "balance": zod.number(),
+  "initialBalance": zod.number()
+})
+
+
+/**
+ * @summary Get Rona summary stats (income, expenses, counts)
+ */
+export const GetRonaSummaryResponse = zod.object({
+  "totalIncome": zod.number(),
+  "totalExpenses": zod.number(),
+  "transactionCount": zod.number(),
+  "incomeCount": zod.number(),
+  "expenseCount": zod.number()
+})
+
+

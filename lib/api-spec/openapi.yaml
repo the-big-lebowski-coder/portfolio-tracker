@@ -109,6 +109,87 @@ paths:
               schema:
                 $ref: "#/components/schemas/Summary"
 
+  /rona/transactions:
+    get:
+      operationId: listRonaTransactions
+      tags: [transactions]
+      summary: List all Rona transactions, newest first
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createRonaTransaction
+      tags: [transactions]
+      summary: Add a new Rona transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Validation error
+
+  /rona/transactions/{id}:
+    delete:
+      operationId: deleteRonaTransaction
+      tags: [transactions]
+      summary: Delete a Rona transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+
+  /rona/balance:
+    get:
+      operationId: getRonaBalance
+      tags: [balance]
+      summary: Get Rona current account balance
+      responses:
+        "200":
+          description: Current balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+
+  /rona/summary:
+    get:
+      operationId: getRonaSummary
+      tags: [balance]
+      summary: Get Rona summary stats (income, expenses, counts)
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+
 components:
   schemas:
     HealthStatus:

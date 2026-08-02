@@ -488,3 +488,375 @@ export function useGetSummary<TData = Awaited<ReturnType<typeof getSummary>>, TE
 
 
 
+export const getListRonaTransactionsUrl = () => {
+
+
+
+
+  return `/api/rona/transactions`
+}
+
+/**
+ * @summary List all Rona transactions, newest first
+ */
+export const listRonaTransactions = async ( options?: RequestInit): Promise<Transaction[]> => {
+
+  return customFetch<Transaction[]>(getListRonaTransactionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRonaTransactionsQueryKey = () => {
+    return [
+    `/api/rona/transactions`
+    ] as const;
+    }
+
+
+export const getListRonaTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof listRonaTransactions>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRonaTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRonaTransactionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRonaTransactions>>> = ({ signal }) => listRonaTransactions({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRonaTransactions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRonaTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof listRonaTransactions>>>
+export type ListRonaTransactionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all Rona transactions, newest first
+ */
+
+export function useListRonaTransactions<TData = Awaited<ReturnType<typeof listRonaTransactions>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRonaTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRonaTransactionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateRonaTransactionUrl = () => {
+
+
+
+
+  return `/api/rona/transactions`
+}
+
+/**
+ * @summary Add a new Rona transaction
+ */
+export const createRonaTransaction = async (transactionInput: TransactionInput, options?: RequestInit): Promise<Transaction> => {
+
+  return customFetch<Transaction>(getCreateRonaTransactionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      transactionInput,)
+  }
+);}
+
+
+
+
+export const getCreateRonaTransactionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRonaTransaction>>, TError,{data: BodyType<TransactionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createRonaTransaction>>, TError,{data: BodyType<TransactionInput>}, TContext> => {
+
+const mutationKey = ['createRonaTransaction'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRonaTransaction>>, {data: BodyType<TransactionInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createRonaTransaction(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateRonaTransactionMutationResult = NonNullable<Awaited<ReturnType<typeof createRonaTransaction>>>
+    export type CreateRonaTransactionMutationBody = BodyType<TransactionInput>
+    export type CreateRonaTransactionMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a new Rona transaction
+ */
+export const useCreateRonaTransaction = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRonaTransaction>>, TError,{data: BodyType<TransactionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createRonaTransaction>>,
+        TError,
+        {data: BodyType<TransactionInput>},
+        TContext
+      > => {
+      return useMutation(getCreateRonaTransactionMutationOptions(options));
+    }
+
+export const getDeleteRonaTransactionUrl = (id: number,) => {
+
+
+
+
+  return `/api/rona/transactions/${id}`
+}
+
+/**
+ * @summary Delete a Rona transaction by ID
+ */
+export const deleteRonaTransaction = async (id: number, options?: RequestInit): Promise<Transaction> => {
+
+  return customFetch<Transaction>(getDeleteRonaTransactionUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteRonaTransactionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRonaTransaction>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteRonaTransaction>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteRonaTransaction'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRonaTransaction>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteRonaTransaction(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteRonaTransactionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRonaTransaction>>>
+
+    export type DeleteRonaTransactionMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a Rona transaction by ID
+ */
+export const useDeleteRonaTransaction = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRonaTransaction>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteRonaTransaction>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteRonaTransactionMutationOptions(options));
+    }
+
+export const getGetRonaBalanceUrl = () => {
+
+
+
+
+  return `/api/rona/balance`
+}
+
+/**
+ * @summary Get Rona current account balance
+ */
+export const getRonaBalance = async ( options?: RequestInit): Promise<Balance> => {
+
+  return customFetch<Balance>(getGetRonaBalanceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRonaBalanceQueryKey = () => {
+    return [
+    `/api/rona/balance`
+    ] as const;
+    }
+
+
+export const getGetRonaBalanceQueryOptions = <TData = Awaited<ReturnType<typeof getRonaBalance>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRonaBalance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRonaBalanceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRonaBalance>>> = ({ signal }) => getRonaBalance({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRonaBalance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRonaBalanceQueryResult = NonNullable<Awaited<ReturnType<typeof getRonaBalance>>>
+export type GetRonaBalanceQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Rona current account balance
+ */
+
+export function useGetRonaBalance<TData = Awaited<ReturnType<typeof getRonaBalance>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRonaBalance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRonaBalanceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetRonaSummaryUrl = () => {
+
+
+
+
+  return `/api/rona/summary`
+}
+
+/**
+ * @summary Get Rona summary stats (income, expenses, counts)
+ */
+export const getRonaSummary = async ( options?: RequestInit): Promise<Summary> => {
+
+  return customFetch<Summary>(getGetRonaSummaryUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRonaSummaryQueryKey = () => {
+    return [
+    `/api/rona/summary`
+    ] as const;
+    }
+
+
+export const getGetRonaSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getRonaSummary>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRonaSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRonaSummaryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRonaSummary>>> = ({ signal }) => getRonaSummary({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRonaSummary>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRonaSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getRonaSummary>>>
+export type GetRonaSummaryQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Rona summary stats (income, expenses, counts)
+ */
+
+export function useGetRonaSummary<TData = Awaited<ReturnType<typeof getRonaSummary>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRonaSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRonaSummaryQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+

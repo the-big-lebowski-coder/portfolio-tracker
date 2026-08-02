@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/rona/"
+title = "קופת החיסכון של רונה"
+description = "A personal Hebrew savings tracker for Rona, with USD currency. Tracks income and expenses, shows running balance, and allows exporting data to CSV."
+version = "1.0.0"
+id = "artifacts/rona"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/rona/" ]
+localPort = 21790
+
+[services.development]
+run = "pnpm --filter @workspace/rona run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rona", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/rona/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21790"
+BASE_PATH = "/rona/"
