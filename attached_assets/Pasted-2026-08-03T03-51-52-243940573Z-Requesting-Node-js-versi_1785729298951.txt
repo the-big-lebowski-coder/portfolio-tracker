@@ -1,0 +1,120 @@
+2026-08-03T03:51:52.243940573Z ==> Requesting Node.js version 24
+2026-08-03T03:51:52.321216227Z ==> Using Node.js version 24.18.1 via /opt/render/project/src/.node-version
+2026-08-03T03:51:52.321228141Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-08-03T03:51:52.321374157Z ==> Installing Node.js version 24.18.1...
+2026-08-03T03:51:53.241839476Z ==> Running build command 'pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build'...
+2026-08-03T03:51:54.785692308Z 
+2026-08-03T03:51:54.785712291Z > @workspace/api-server@0.0.0 build /opt/render/project/src/artifacts/api-server
+2026-08-03T03:51:54.78571544Z > node ./build.mjs
+2026-08-03T03:51:54.785716316Z 
+2026-08-03T03:51:55.232491094Z 
+2026-08-03T03:51:55.232507979Z   dist/index.mjs                       2.2mb ⚠️
+2026-08-03T03:51:55.232509534Z   dist/pino-worker.mjs               153.4kb
+2026-08-03T03:51:55.232510314Z   dist/pino-file.mjs                 142.1kb
+2026-08-03T03:51:55.232511073Z   dist/pino-pretty.mjs               114.6kb
+2026-08-03T03:51:55.232511872Z   dist/thread-stream-worker.mjs        7.3kb
+2026-08-03T03:51:55.232512618Z   dist/index.mjs.map                   3.8mb
+2026-08-03T03:51:55.232513526Z   dist/pino-worker.mjs.map           256.9kb
+2026-08-03T03:51:55.232514311Z   dist/pino-file.mjs.map             229.0kb
+2026-08-03T03:51:55.232515079Z   dist/pino-pretty.mjs.map           204.0kb
+2026-08-03T03:51:55.232515863Z   dist/thread-stream-worker.mjs.map   12.0kb
+2026-08-03T03:51:55.232516605Z 
+2026-08-03T03:51:55.232517884Z ⚡ Done in 404ms
+2026-08-03T03:51:56.379420107Z ==> Uploading build...
+2026-08-03T03:52:01.776733322Z ==> Uploaded in 3.6s. Compression took 1.8s
+2026-08-03T03:52:01.779685535Z ==> Build successful 🎉
+2026-08-03T03:52:04.697830175Z ==> Deploying...
+2026-08-03T03:52:04.82747665Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-08-03T03:52:21.820305726Z ==> Running 'pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run build && BASE_PATH=/piggy-bank/ pnpm --filter @workspace/piggy-bank run build && cp -r artifacts/piggy-bank/dist/public artifacts/api-server/dist/piggy-bank && node --enable-source-maps artifacts/api-server/dist/index.mjs'
+2026-08-03T03:52:26.531075879Z 
+2026-08-03T03:52:26.53110795Z > @workspace/db@0.0.0 push /opt/render/project/src/lib/db
+2026-08-03T03:52:26.5311136Z > drizzle-kit push --config ./drizzle.config.ts
+2026-08-03T03:52:26.53111635Z 
+2026-08-03T03:52:27.921031224Z Reading config file '/opt/render/project/src/lib/db/drizzle.config.ts'
+2026-08-03T03:52:34.524381103Z Using 'pg' driver for database querying
+2026-08-03T03:52:39.321155119Z [⣷] Pulling schema from database...
+2026-08-03T03:52:39.322784935Z (node:85) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+2026-08-03T03:52:39.322797235Z In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+2026-08-03T03:52:39.322801625Z 
+2026-08-03T03:52:39.322806115Z To prepare for this change:
+2026-08-03T03:52:39.322810816Z - If you want the current behavior, explicitly use 'sslmode=verify-full'
+2026-08-03T03:52:39.322814896Z - If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+2026-08-03T03:52:39.322818816Z 
+2026-08-03T03:52:39.322823396Z See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+2026-08-03T03:52:39.322827656Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-08-03T03:52:39.354438029Z [⣯] Pulling schema from database...
+2026-08-03T03:52:39.482427634Z [⣟] Pulling schema from database...
+2026-08-03T03:52:39.61044543Z [⡿] Pulling schema from database...
+2026-08-03T03:52:39.738568619Z [⢿] Pulling schema from database...
+2026-08-03T03:52:39.866644266Z [⣻] Pulling schema from database...
+2026-08-03T03:52:39.994400875Z [⣽] Pulling schema from database...
+2026-08-03T03:52:40.122777221Z [⣷] Pulling schema from database...
+2026-08-03T03:52:40.319209588Z [⣯] Pulling schema from database...
+2026-08-03T03:52:40.447376818Z [⣟] Pulling schema from database...
+2026-08-03T03:52:40.574858169Z [⡿] Pulling schema from database...
+2026-08-03T03:52:40.702840574Z [⢿] Pulling schema from database...
+2026-08-03T03:52:40.831756664Z [⣻] Pulling schema from database...
+2026-08-03T03:52:40.960059719Z [⣽] Pulling schema from database...
+2026-08-03T03:52:41.088235339Z [⣷] Pulling schema from database...
+2026-08-03T03:52:41.217074787Z [⣯] Pulling schema from database...
+2026-08-03T03:52:41.345456184Z [⣟] Pulling schema from database...
+2026-08-03T03:52:41.473004946Z [⡿] Pulling schema from database...
+2026-08-03T03:52:41.60163552Z [⢿] Pulling schema from database...
+2026-08-03T03:52:41.729299725Z [⣻] Pulling schema from database...
+2026-08-03T03:52:41.857060874Z [⣽] Pulling schema from database...
+2026-08-03T03:52:41.985284606Z [⣷] Pulling schema from database...
+2026-08-03T03:52:41.997537488Z [✓] Pulling schema from database...
+2026-08-03T03:52:42.007014383Z [i] No changes detected
+2026-08-03T03:52:45.827819949Z 
+2026-08-03T03:52:45.82785701Z > @workspace/api-server@0.0.0 build /opt/render/project/src/artifacts/api-server
+2026-08-03T03:52:45.82786441Z > node ./build.mjs
+2026-08-03T03:52:45.82786763Z 
+2026-08-03T03:52:52.027403881Z 
+2026-08-03T03:52:52.027423111Z   dist/index.mjs                       2.2mb ⚠️
+2026-08-03T03:52:52.027427841Z   dist/pino-worker.mjs               153.4kb
+2026-08-03T03:52:52.027431181Z   dist/pino-file.mjs                 142.1kb
+2026-08-03T03:52:52.027434241Z   dist/pino-pretty.mjs               114.6kb
+2026-08-03T03:52:52.027437362Z   dist/thread-stream-worker.mjs        7.3kb
+2026-08-03T03:52:52.027440471Z   dist/index.mjs.map                   3.8mb
+2026-08-03T03:52:52.027443612Z   dist/pino-worker.mjs.map           256.9kb
+2026-08-03T03:52:52.027445572Z   dist/pino-file.mjs.map             229.0kb
+2026-08-03T03:52:52.027447462Z   dist/pino-pretty.mjs.map           204.0kb
+2026-08-03T03:52:52.027449452Z   dist/thread-stream-worker.mjs.map   12.0kb
+2026-08-03T03:52:52.027451332Z 
+2026-08-03T03:52:52.027454252Z ⚡ Done in 5705ms
+2026-08-03T03:52:55.729423728Z 
+2026-08-03T03:52:55.729450498Z > @workspace/piggy-bank@0.0.0 build /opt/render/project/src/artifacts/piggy-bank
+2026-08-03T03:52:55.729455249Z > vite build --config vite.config.ts
+2026-08-03T03:52:55.729457969Z 
+2026-08-03T03:52:59.332264804Z vite v7.3.3 building client environment for production...
+2026-08-03T03:53:00.223154789Z transforming...
+2026-08-03T03:53:06.121310431Z src/components/ui/tooltip.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T03:53:09.202566334Z ==> No open ports detected, continuing to scan...
+2026-08-03T03:53:09.404347635Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-08-03T03:53:32.2258Z src/components/ui/select.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T03:53:32.32067714Z src/components/ui/calendar.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T03:53:34.131327987Z src/components/ui/label.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T03:54:07.825439422Z ✓ 3091 modules transformed.
+2026-08-03T03:54:10.597684256Z ==> No open ports detected, continuing to scan...
+2026-08-03T03:54:10.761194479Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-08-03T03:54:25.52343758Z ==> Your service is live 🎉
+2026-08-03T03:54:25.626735481Z ==> 
+2026-08-03T03:54:25.630195781Z ==> ///////////////////////////////////////////////////////////
+2026-08-03T03:54:25.634180976Z ==> 
+2026-08-03T03:54:25.638326865Z ==> Available at your primary URL https://portfolio-tracker-5yv0.onrender.com
+2026-08-03T03:54:25.642218578Z ==> 
+2026-08-03T03:54:25.645665227Z ==> ///////////////////////////////////////////////////////////
+2026-08-03T03:54:19.420153873Z rendering chunks...
+2026-08-03T03:54:21.820292458Z computing gzip size...
+2026-08-03T03:54:22.029774459Z dist/public/index.html                   1.42 kB │ gzip:   0.56 kB
+2026-08-03T03:54:22.0298253Z dist/public/assets/index-CQ4FaqCc.css   98.35 kB │ gzip:  16.21 kB
+2026-08-03T03:54:22.029940554Z dist/public/assets/index-CNJ1oBGf.js   577.52 kB │ gzip: 178.07 kB
+2026-08-03T03:54:22.03017651Z 
+2026-08-03T03:54:22.030188321Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-08-03T03:54:22.030195121Z - Using dynamic import() to code-split the application
+2026-08-03T03:54:22.030200641Z - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+2026-08-03T03:54:22.030205571Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2026-08-03T03:54:22.030600212Z ✓ built in 1m 22s
+2026-08-03T03:54:24.12155531Z {"level":30,"time":1785729264120,"pid":70,"hostname":"srv-d8t2m4sm0tmc73bqpigg-hibernate-b76597df-wgxbw","port":10000,"msg":"Server listening"}
+2026-08-03T03:54:24.331972788Z {"level":30,"time":1785729264331,"pid":70,"hostname":"srv-d8t2m4sm0tmc73bqpigg-hibernate-b76597df-wgxbw","req":{"id":1,"method":"HEAD","url":"/"},"res":{"statusCode":200},"responseTime":12,"msg":"request completed"}
+2026-08-03T03:54:25.608419434Z {"level":30,"time":1785729265608,"pid":70,"hostname":"srv-d8t2m4sm0tmc73bqpigg-hibernate-b76597df-wgxbw","req":{"id":2,"method":"GET","url":"/"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
