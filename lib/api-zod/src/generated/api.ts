@@ -162,3 +162,76 @@ export const GetRonaSummaryResponse = zod.object({
 })
 
 
+/**
+ * @summary List all Uri transactions, newest first
+ */
+export const ListUriTransactionsResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['income', 'expense']),
+  "amount": zod.number(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "date": zod.coerce.date(),
+  "balanceAfter": zod.number(),
+  "createdAt": zod.string()
+})
+export const ListUriTransactionsResponse = zod.array(ListUriTransactionsResponseItem)
+
+
+/**
+ * @summary Add a new Uri transaction
+ */
+export const createUriTransactionBodyAmountMin = 0.01;
+
+
+
+
+export const CreateUriTransactionBody = zod.object({
+  "type": zod.enum(['income', 'expense']),
+  "amount": zod.number().min(createUriTransactionBodyAmountMin),
+  "description": zod.string().min(1),
+  "category": zod.string(),
+  "date": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a Uri transaction by ID
+ */
+export const DeleteUriTransactionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteUriTransactionResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['income', 'expense']),
+  "amount": zod.number(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "date": zod.coerce.date(),
+  "balanceAfter": zod.number(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Get Uri current account balance
+ */
+export const GetUriBalanceResponse = zod.object({
+  "balance": zod.number(),
+  "initialBalance": zod.number()
+})
+
+
+/**
+ * @summary Get Uri summary stats (income, expenses, counts)
+ */
+export const GetUriSummaryResponse = zod.object({
+  "totalIncome": zod.number(),
+  "totalExpenses": zod.number(),
+  "transactionCount": zod.number(),
+  "incomeCount": zod.number(),
+  "expenseCount": zod.number()
+})
+
+

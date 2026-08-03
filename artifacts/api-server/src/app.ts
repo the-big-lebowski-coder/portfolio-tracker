@@ -57,6 +57,13 @@ app.get("/rona/{*path}", (_req, res) => {
   res.sendFile(path.join(ronaDir, "index.html"));
 });
 
+// Serve Uri's app at /uri/
+const uriDir = path.resolve(__dirname, "uri");
+app.use("/uri", express.static(uriDir));
+app.get("/uri/{*path}", (_req, res) => {
+  res.sendFile(path.join(uriDir, "index.html"));
+});
+
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "..", "portfolio-tracker.html"));
 });

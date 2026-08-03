@@ -190,6 +190,87 @@ paths:
               schema:
                 $ref: "#/components/schemas/Summary"
 
+  /uri/transactions:
+    get:
+      operationId: listUriTransactions
+      tags: [transactions]
+      summary: List all Uri transactions, newest first
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createUriTransaction
+      tags: [transactions]
+      summary: Add a new Uri transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Validation error
+
+  /uri/transactions/{id}:
+    delete:
+      operationId: deleteUriTransaction
+      tags: [transactions]
+      summary: Delete a Uri transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+
+  /uri/balance:
+    get:
+      operationId: getUriBalance
+      tags: [balance]
+      summary: Get Uri current account balance
+      responses:
+        "200":
+          description: Current balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+
+  /uri/summary:
+    get:
+      operationId: getUriSummary
+      tags: [balance]
+      summary: Get Uri summary stats (income, expenses, counts)
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+
 components:
   schemas:
     HealthStatus:

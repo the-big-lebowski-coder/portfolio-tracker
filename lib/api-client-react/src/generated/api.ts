@@ -860,3 +860,375 @@ export function useGetRonaSummary<TData = Awaited<ReturnType<typeof getRonaSumma
 
 
 
+export const getListUriTransactionsUrl = () => {
+
+
+
+
+  return `/api/uri/transactions`
+}
+
+/**
+ * @summary List all Uri transactions, newest first
+ */
+export const listUriTransactions = async ( options?: RequestInit): Promise<Transaction[]> => {
+
+  return customFetch<Transaction[]>(getListUriTransactionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListUriTransactionsQueryKey = () => {
+    return [
+    `/api/uri/transactions`
+    ] as const;
+    }
+
+
+export const getListUriTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof listUriTransactions>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listUriTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListUriTransactionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUriTransactions>>> = ({ signal }) => listUriTransactions({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUriTransactions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListUriTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof listUriTransactions>>>
+export type ListUriTransactionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all Uri transactions, newest first
+ */
+
+export function useListUriTransactions<TData = Awaited<ReturnType<typeof listUriTransactions>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listUriTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListUriTransactionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateUriTransactionUrl = () => {
+
+
+
+
+  return `/api/uri/transactions`
+}
+
+/**
+ * @summary Add a new Uri transaction
+ */
+export const createUriTransaction = async (transactionInput: TransactionInput, options?: RequestInit): Promise<Transaction> => {
+
+  return customFetch<Transaction>(getCreateUriTransactionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      transactionInput,)
+  }
+);}
+
+
+
+
+export const getCreateUriTransactionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUriTransaction>>, TError,{data: BodyType<TransactionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createUriTransaction>>, TError,{data: BodyType<TransactionInput>}, TContext> => {
+
+const mutationKey = ['createUriTransaction'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUriTransaction>>, {data: BodyType<TransactionInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createUriTransaction(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateUriTransactionMutationResult = NonNullable<Awaited<ReturnType<typeof createUriTransaction>>>
+    export type CreateUriTransactionMutationBody = BodyType<TransactionInput>
+    export type CreateUriTransactionMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a new Uri transaction
+ */
+export const useCreateUriTransaction = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUriTransaction>>, TError,{data: BodyType<TransactionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createUriTransaction>>,
+        TError,
+        {data: BodyType<TransactionInput>},
+        TContext
+      > => {
+      return useMutation(getCreateUriTransactionMutationOptions(options));
+    }
+
+export const getDeleteUriTransactionUrl = (id: number,) => {
+
+
+
+
+  return `/api/uri/transactions/${id}`
+}
+
+/**
+ * @summary Delete a Uri transaction by ID
+ */
+export const deleteUriTransaction = async (id: number, options?: RequestInit): Promise<Transaction> => {
+
+  return customFetch<Transaction>(getDeleteUriTransactionUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteUriTransactionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUriTransaction>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteUriTransaction>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteUriTransaction'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUriTransaction>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteUriTransaction(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteUriTransactionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUriTransaction>>>
+
+    export type DeleteUriTransactionMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a Uri transaction by ID
+ */
+export const useDeleteUriTransaction = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUriTransaction>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteUriTransaction>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteUriTransactionMutationOptions(options));
+    }
+
+export const getGetUriBalanceUrl = () => {
+
+
+
+
+  return `/api/uri/balance`
+}
+
+/**
+ * @summary Get Uri current account balance
+ */
+export const getUriBalance = async ( options?: RequestInit): Promise<Balance> => {
+
+  return customFetch<Balance>(getGetUriBalanceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetUriBalanceQueryKey = () => {
+    return [
+    `/api/uri/balance`
+    ] as const;
+    }
+
+
+export const getGetUriBalanceQueryOptions = <TData = Awaited<ReturnType<typeof getUriBalance>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUriBalance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUriBalanceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUriBalance>>> = ({ signal }) => getUriBalance({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUriBalance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetUriBalanceQueryResult = NonNullable<Awaited<ReturnType<typeof getUriBalance>>>
+export type GetUriBalanceQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Uri current account balance
+ */
+
+export function useGetUriBalance<TData = Awaited<ReturnType<typeof getUriBalance>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUriBalance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetUriBalanceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetUriSummaryUrl = () => {
+
+
+
+
+  return `/api/uri/summary`
+}
+
+/**
+ * @summary Get Uri summary stats (income, expenses, counts)
+ */
+export const getUriSummary = async ( options?: RequestInit): Promise<Summary> => {
+
+  return customFetch<Summary>(getGetUriSummaryUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetUriSummaryQueryKey = () => {
+    return [
+    `/api/uri/summary`
+    ] as const;
+    }
+
+
+export const getGetUriSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getUriSummary>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUriSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUriSummaryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUriSummary>>> = ({ signal }) => getUriSummary({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUriSummary>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetUriSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getUriSummary>>>
+export type GetUriSummaryQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Uri summary stats (income, expenses, counts)
+ */
+
+export function useGetUriSummary<TData = Awaited<ReturnType<typeof getUriSummary>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUriSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetUriSummaryQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+

@@ -21,3 +21,5 @@ export * from "./transactions";
 export * from "./settings";
 export * from "./rona-transactions";
 export * from "./rona-settings";
+export * from "./uri-transactions";
+export * from "./uri-settings";

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/uri/"
+title = "קופת החיסכון של אורי"
+description = "A personal Hebrew savings tracker for Uri, with USD currency and a green theme. Tracks income and expenses, shows running balance, and allows exporting data to CSV. Fully isolated from other users' data."
+version = "1.0.0"
+id = "artifacts/uri"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/uri/" ]
+localPort = 19034
+
+[services.development]
+run = "pnpm --filter @workspace/uri run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/uri", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/uri/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19034"
+BASE_PATH = "/uri/"
