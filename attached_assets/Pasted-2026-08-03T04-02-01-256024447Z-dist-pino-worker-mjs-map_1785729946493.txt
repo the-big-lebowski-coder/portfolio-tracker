@@ -1,0 +1,101 @@
+2026-08-03T04:02:01.256024447Z   dist/pino-worker.mjs.map           256.9kb
+2026-08-03T04:02:01.256025179Z   dist/pino-file.mjs.map             229.0kb
+2026-08-03T04:02:01.256025976Z   dist/pino-pretty.mjs.map           204.0kb
+2026-08-03T04:02:01.256026744Z   dist/thread-stream-worker.mjs.map   12.0kb
+2026-08-03T04:02:01.256027588Z 
+2026-08-03T04:02:01.256028895Z ⚡ Done in 368ms
+2026-08-03T04:02:02.230407406Z ==> Uploading build...
+2026-08-03T04:02:07.531721385Z ==> Uploaded in 3.5s. Compression took 1.8s
+2026-08-03T04:02:07.534167243Z ==> Build successful 🎉
+2026-08-03T04:02:10.293928672Z ==> Deploying...
+2026-08-03T04:02:10.398756173Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-08-03T04:02:33.951471723Z ==> Running 'pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run build && BASE_PATH=/piggy-bank/ pnpm --filter @workspace/piggy-bank run build && cp -r artifacts/piggy-bank/dist/public artifacts/api-server/dist/piggy-bank && node --enable-source-maps artifacts/api-server/dist/index.mjs'
+2026-08-03T04:02:41.449175745Z 
+2026-08-03T04:02:41.449195335Z > @workspace/db@0.0.0 push /opt/render/project/src/lib/db
+2026-08-03T04:02:41.449201226Z > drizzle-kit push --config ./drizzle.config.ts
+2026-08-03T04:02:41.449203846Z 
+2026-08-03T04:02:42.749555426Z Reading config file '/opt/render/project/src/lib/db/drizzle.config.ts'
+2026-08-03T04:02:49.351141663Z Using 'pg' driver for database querying
+2026-08-03T04:02:54.35757401Z [⣷] Pulling schema from database...
+2026-08-03T04:02:54.44505391Z (node:86) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+2026-08-03T04:02:54.445103521Z In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+2026-08-03T04:02:54.445108412Z 
+2026-08-03T04:02:54.445113792Z To prepare for this change:
+2026-08-03T04:02:54.445118612Z - If you want the current behavior, explicitly use 'sslmode=verify-full'
+2026-08-03T04:02:54.445123042Z - If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+2026-08-03T04:02:54.445126952Z 
+2026-08-03T04:02:54.445131422Z See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+2026-08-03T04:02:54.445135662Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-08-03T04:02:54.476284219Z [⣯] Pulling schema from database...
+2026-08-03T04:02:54.604591997Z [⣟] Pulling schema from database...
+2026-08-03T04:02:54.732890024Z [⡿] Pulling schema from database...
+2026-08-03T04:02:54.861836969Z [⢿] Pulling schema from database...
+2026-08-03T04:02:54.989724775Z [⣻] Pulling schema from database...
+2026-08-03T04:02:55.117986971Z [⣽] Pulling schema from database...
+2026-08-03T04:02:55.246294939Z [⣷] Pulling schema from database...
+2026-08-03T04:02:55.374135064Z [⣯] Pulling schema from database...
+2026-08-03T04:02:55.502495092Z [⣟] Pulling schema from database...
+2026-08-03T04:02:55.630388159Z [⡿] Pulling schema from database...
+2026-08-03T04:02:55.758923853Z [⢿] Pulling schema from database...
+2026-08-03T04:02:55.887513128Z [⣻] Pulling schema from database...
+2026-08-03T04:02:56.015772864Z [⣽] Pulling schema from database...
+2026-08-03T04:02:56.143982379Z [⣷] Pulling schema from database...
+2026-08-03T04:02:56.275187754Z [⣯] Pulling schema from database...
+2026-08-03T04:02:56.403791099Z [⣟] Pulling schema from database...
+2026-08-03T04:02:56.531701916Z [⡿] Pulling schema from database...
+2026-08-03T04:02:56.659626363Z [⢿] Pulling schema from database...
+2026-08-03T04:02:56.723665894Z [✓] Pulling schema from database...
+2026-08-03T04:02:56.734930647Z [i] No changes detected
+2026-08-03T04:03:00.451002913Z 
+2026-08-03T04:03:00.451033054Z > @workspace/api-server@0.0.0 build /opt/render/project/src/artifacts/api-server
+2026-08-03T04:03:00.451040574Z > node ./build.mjs
+2026-08-03T04:03:00.451046125Z 
+2026-08-03T04:03:07.844063429Z 
+2026-08-03T04:03:07.84408705Z   dist/index.mjs                       2.2mb ⚠️
+2026-08-03T04:03:07.84409218Z   dist/pino-worker.mjs               153.4kb
+2026-08-03T04:03:07.84409637Z   dist/pino-file.mjs                 142.1kb
+2026-08-03T04:03:07.8441106Z   dist/pino-pretty.mjs               114.6kb
+2026-08-03T04:03:07.8441135Z   dist/thread-stream-worker.mjs        7.3kb
+2026-08-03T04:03:07.84411594Z   dist/index.mjs.map                   3.8mb
+2026-08-03T04:03:07.84411852Z   dist/pino-worker.mjs.map           256.9kb
+2026-08-03T04:03:07.844120931Z   dist/pino-file.mjs.map             229.0kb
+2026-08-03T04:03:07.844123831Z   dist/pino-pretty.mjs.map           204.0kb
+2026-08-03T04:03:07.844126671Z   dist/thread-stream-worker.mjs.map   12.0kb
+2026-08-03T04:03:07.844129511Z 
+2026-08-03T04:03:07.844133011Z ⚡ Done in 6892ms
+2026-08-03T04:03:11.55250504Z 
+2026-08-03T04:03:11.552530131Z > @workspace/piggy-bank@0.0.0 build /opt/render/project/src/artifacts/piggy-bank
+2026-08-03T04:03:11.552534101Z > vite build --config vite.config.ts
+2026-08-03T04:03:11.552536411Z 
+2026-08-03T04:03:14.767286035Z vite v7.3.3 building client environment for production...
+2026-08-03T04:03:15.645673631Z transforming...
+2026-08-03T04:03:16.602384808Z ==> No open ports detected, continuing to scan...
+2026-08-03T04:03:16.78054303Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-08-03T04:03:21.64676708Z src/components/ui/tooltip.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T04:03:48.359913456Z src/components/ui/select.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T04:03:48.447559878Z src/components/ui/calendar.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T04:03:51.743876174Z src/components/ui/label.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+2026-08-03T04:04:19.855858317Z ==> No open ports detected, continuing to scan...
+2026-08-03T04:04:20.038474826Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-08-03T04:04:26.057170391Z ✓ 3091 modules transformed.
+2026-08-03T04:04:39.845289865Z rendering chunks...
+2026-08-03T04:04:40.145325172Z computing gzip size...
+2026-08-03T04:04:40.277631909Z dist/public/index.html                   1.42 kB │ gzip:   0.56 kB
+2026-08-03T04:04:40.277704291Z dist/public/assets/index-CQ4FaqCc.css   98.35 kB │ gzip:  16.21 kB
+2026-08-03T04:04:40.3435342Z dist/public/assets/index-CNJ1oBGf.js   577.52 kB │ gzip: 178.07 kB
+2026-08-03T04:04:40.343835298Z 
+2026-08-03T04:04:40.343855819Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-08-03T04:04:40.343861119Z - Using dynamic import() to code-split the application
+2026-08-03T04:04:40.343865629Z - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+2026-08-03T04:04:40.343869289Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2026-08-03T04:04:40.344215419Z ✓ built in 1m 25s
+2026-08-03T04:04:42.149080761Z {"level":30,"time":1785729882148,"pid":72,"hostname":"srv-d8t2m4sm0tmc73bqpigg-hibernate-7dc847fc45-dsdk7","port":10000,"msg":"Server listening"}
+2026-08-03T04:04:42.610642908Z {"level":30,"time":1785729882610,"pid":72,"hostname":"srv-d8t2m4sm0tmc73bqpigg-hibernate-7dc847fc45-dsdk7","req":{"id":1,"method":"HEAD","url":"/"},"res":{"statusCode":200},"responseTime":13,"msg":"request completed"}
+2026-08-03T04:04:51.913433516Z ==> Your service is live 🎉
+2026-08-03T04:04:52.039876546Z ==> 
+2026-08-03T04:04:52.043983475Z ==> ///////////////////////////////////////////////////////////
+2026-08-03T04:04:52.047738839Z ==> 
+2026-08-03T04:04:52.052427397Z ==> Available at your primary URL https://portfolio-tracker-5yv0.onrender.com
+2026-08-03T04:04:52.056349304Z ==> 
+2026-08-03T04:04:52.060469434Z ==> ///////////////////////////////////////////////////////////
+2026-08-03T04:04:51.901263829Z {"level":30,"time":1785729891901,"pid":72,"hostname":"srv-d8t2m4sm0tmc73bqpigg-hibernate-7dc847fc45-dsdk7","req":{"id":2,"method":"GET","url":"/"},"res":{"statusCode":200},"responseTime":6,"msg":"request completed"}
