@@ -13,8 +13,9 @@ import { logger } from "./lib/logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// __dirname = artifacts/api-server/dist/ — piggy bank is built here after server bundle
+// __dirname = artifacts/api-server/dist/ — piggy bank and rona are built here after server bundle
 const piggyBankDir = path.resolve(__dirname, "piggy-bank");
+const ronaDir = path.resolve(__dirname, "rona");
 
 const app: Express = express();
 app.set("etag", false); // prevent 304s so clients always get fresh market-cap data
@@ -48,6 +49,12 @@ app.use("/api", router);
 app.use("/piggy-bank", express.static(piggyBankDir));
 app.get("/piggy-bank/{*path}", (_req, res) => {
   res.sendFile(path.join(piggyBankDir, "index.html"));
+});
+
+// Serve Rona's app at /rona/
+app.use("/rona", express.static(ronaDir));
+app.get("/rona/{*path}", (_req, res) => {
+  res.sendFile(path.join(ronaDir, "index.html"));
 });
 
 app.get("/", (_req, res) => {
