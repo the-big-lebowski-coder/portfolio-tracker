@@ -45,14 +45,14 @@ export function TransactionList() {
     setDeletingId(id);
     deleteTransaction.mutate({ id }, {
       onSuccess: () => {
-        toast({ title: "נמחק", description: "העסקה נמחקה בהצלחה." });
+        toast({ title: "Deleted", description: "Transaction deleted successfully." });
         queryClient.invalidateQueries({ queryKey: getListUriTransactionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetUriBalanceQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetUriSummaryQueryKey() });
         setDeletingId(null);
       },
       onError: () => {
-        toast({ title: "שגיאה", description: "לא ניתן למחוק את העסקה.", variant: "destructive" });
+        toast({ title: "Error", description: "Could not delete the transaction.", variant: "destructive" });
         setDeletingId(null);
       }
     });
@@ -60,10 +60,10 @@ export function TransactionList() {
 
   const handleExport = () => {
     if (!transactions || transactions.length === 0) return;
-    const headers = ["תאריך", "סוג", "תיאור", "קטגוריה", "סכום ($)", "יתרה לאחר ($)"];
+    const headers = ["Date", "Type", "Description", "Category", "Amount ($)", "Balance After ($)"];
     const rows = transactions.map((tx) => [
-      format(new Date(tx.date), "d/M/yyyy"),
-      tx.type === "income" ? "הכנסה" : "הוצאה",
+      format(new Date(tx.date), "M/d/yyyy"),
+      tx.type === "income" ? "Income" : "Expense",
       tx.description,
       tx.category,
       Number(tx.amount),
@@ -72,11 +72,11 @@ export function TransactionList() {
     const csvContent = [headers, ...rows]
       .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
       .join("\n");
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `קופת-אורי-${format(new Date(), "dd-MM-yyyy")}.csv`;
+    a.download = `uri-piggy-bank-${format(new Date(), "MM-dd-yyyy")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -97,9 +97,9 @@ export function TransactionList() {
             <Coins className="h-12 w-12 text-primary" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-foreground">אין עסקאות עדיין</h3>
+            <h3 className="text-xl font-bold text-foreground">No transactions yet</h3>
             <p className="text-muted-foreground max-w-sm">
-              קופת החיסכון של אורי מחכה! הוסף את ההכנסה הראשונה כדי להתחיל לחסוך.
+              Uri's piggy bank is waiting! Add your first income to start saving.
             </p>
           </div>
         </CardContent>
@@ -110,10 +110,10 @@ export function TransactionList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-foreground">היסטוריה אחרונה</h2>
+        <h2 className="text-xl font-bold text-foreground">Recent History</h2>
         <Button variant="outline" size="sm" onClick={handleExport} className="flex items-center gap-2 text-sm">
           <Download className="h-4 w-4" />
-          ייצוא לאקסל
+          Export to Excel
         </Button>
       </div>
 
@@ -141,7 +141,7 @@ export function TransactionList() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="font-medium bg-muted px-2 py-0.5 rounded-md text-xs">{tx.category}</span>
                   <span>&bull;</span>
-                  <span>{format(new Date(tx.date), "d/M/yyyy")}</span>
+                  <span>{format(new Date(tx.date), "M/d/yyyy")}</span>
                 </div>
               </div>
             </div>
@@ -155,19 +155,19 @@ export function TransactionList() {
                   <Button
                     variant="ghost" size="icon"
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
-                    disabled={isDeleting} title="מחק עסקה"
+                    disabled={isDeleting} title="Delete transaction"
                   >
                     <Trash2 className="h-5 w-5" />
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent dir="rtl">
+                <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>מחיקת עסקה</AlertDialogTitle>
-                    <AlertDialogDescription>האם אתה רוצה למחוק את העסקה?</AlertDialogDescription>
+                    <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+                    <AlertDialogDescription>Are you sure you want to delete this transaction?</AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-row-reverse gap-2">
-                    <AlertDialogAction onClick={() => handleDelete(tx.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">כן</AlertDialogAction>
-                    <AlertDialogCancel>לא</AlertDialogCancel>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(tx.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

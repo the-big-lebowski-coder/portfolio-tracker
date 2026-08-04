@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div
       className="min-h-screen w-full"
-      dir="rtl"
+      dir="ltr"
       style={{
         background: "linear-gradient(135deg, hsl(150 40% 98%) 0%, hsl(145 50% 95%) 50%, hsl(160 45% 95%) 100%)",
       }}
@@ -14,8 +14,8 @@ export default function Home() {
       <header className="relative z-10 px-6 pt-8 pb-4 max-w-3xl mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">💰 קופת החיסכון של אורי</h1>
-            <p className="text-muted-foreground mt-1 text-sm">נהל את הכסף שלך בצורה חכמה</p>
+            <h1 className="text-3xl font-bold text-foreground">💰 Uri's Piggy Bank</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Manage your money wisely</p>
           </div>
           <TransactionForm />
         </div>

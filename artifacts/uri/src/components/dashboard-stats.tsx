@@ -21,7 +21,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-primary-foreground/80 font-medium text-lg flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            יתרה נוכחית
+            Current Balance
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -39,7 +39,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground font-medium text-sm flex items-center gap-2">
             <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
-            סה״כ הכנסות
+            Total Income
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -57,7 +57,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground font-medium text-sm flex items-center gap-2">
             <ArrowDownCircle className="h-4 w-4 text-rose-500" />
-            סה״כ הוצאות
+            Total Expenses
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -75,7 +75,7 @@ export function DashboardStats() {
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground font-medium text-sm flex items-center gap-2">
             <Wallet className="h-4 w-4 text-secondary" />
-            סה״כ פעולות
+            Total Transactions
           </CardTitle>
         </CardHeader>
         <CardContent>
